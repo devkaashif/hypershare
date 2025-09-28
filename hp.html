@@ -3,283 +3,303 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poplol - Login & Signup</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <title>SparkBoard - Share Your Thoughts Anonymously</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <style>
+        :root {
+            --primary: #6c63ff;
+            --secondary: #ff6584;
+            --dark: #2a2a3c;
+            --light: #f8f9fa;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #f44336;
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
-        :root {
-            --primary: #4361ee;
-            --secondary: #3a0ca3;
-            --accent: #4cc9f0;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --success: #4bb543;
-            --error: #ff3333;
-        }
-
+        
         body {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: var(--light);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            padding-bottom: 2rem;
         }
-
-        .container {
-            width: 100%;
-            max-width: 900px;
-            background-color: white;
-            border-radius: 20px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            display: flex;
-            min-height: 550px;
-        }
-
-        .welcome-section {
-            flex: 1;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .welcome-section::before {
-            content: '';
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            top: -50px;
-            right: -50px;
-        }
-
-        .welcome-section::after {
-            content: '';
-            position: absolute;
-            width: 150px;
-            height: 150px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            bottom: -50px;
-            left: -50px;
-        }
-
-        .welcome-section h1 {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .welcome-section p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            line-height: 1.6;
-            position: relative;
-            z-index: 1;
-        }
-
-        .form-section {
-            flex: 1;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .form-container {
-            width: 100%;
-        }
-
-        .form-title {
-            font-size: 2rem;
-            color: var(--dark);
-            margin-bottom: 30px;
+        
+        header {
+            background: rgba(42, 42, 60, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
             text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-
-        .form-group {
-            margin-bottom: 20px;
-            position: relative;
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
         }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--dark);
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e1e5ee;
-            border-radius: 10px;
+        
+        .tagline {
             font-size: 1rem;
-            transition: all 0.3s;
+            opacity: 0.8;
         }
-
-        .form-group input:focus {
-            border-color: var(--primary);
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .post-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        textarea {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--light);
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 120px;
+            transition: all 0.3s ease;
+        }
+        
+        textarea:focus {
             outline: none;
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.2);
         }
-
+        
+        .char-count {
+            text-align: right;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
         .btn {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            background: var(--primary);
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 50px;
+            padding: 0.8rem 1.5rem;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
-
+        
         .btn:hover {
-            background: var(--secondary);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4);
         }
-
+        
         .btn:active {
             transform: translateY(0);
         }
-
-        .toggle-form {
-            text-align: center;
-            margin-top: 25px;
-            color: var(--dark);
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
-
-        .toggle-form a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
+        
+        .posts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .post {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .post-content {
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 0.8rem;
+        }
+        
+        .reaction-btn {
+            background: transparent;
+            border: none;
+            color: var(--light);
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            transition: all 0.2s ease;
         }
-
-        .toggle-form a:hover {
-            text-decoration: underline;
+        
+        .reaction-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
-
-        .message {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        
+        .reaction-btn.active {
+            color: var(--secondary);
+        }
+        
+        .loading {
             text-align: center;
-            display: none;
+            padding: 2rem;
+            font-size: 1.2rem;
         }
-
-        .success {
-            background-color: rgba(75, 181, 67, 0.2);
-            color: var(--success);
-            border: 1px solid var(--success);
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            opacity: 0.7;
         }
-
-        .error {
-            background-color: rgba(255, 51, 51, 0.2);
-            color: var(--error);
-            border: 1px solid var(--error);
+        
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
         }
-
-        .password-toggle {
-            position: absolute;
-            right: 15px;
-            top: 42px;
-            cursor: pointer;
-            color: #6c757d;
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            background: var(--success);
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
         }
-
+        
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .notification.error {
+            background: var(--error);
+        }
+        
         @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
+            .posts-container {
+                grid-template-columns: 1fr;
             }
             
-            .welcome-section {
-                padding: 30px;
+            h1 {
+                font-size: 2rem;
             }
-            
-            .form-section {
-                padding: 30px;
-            }
+        }
+        
+        .floating-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(108, 99, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 99;
+        }
+        
+        .floating-btn:hover {
+            transform: scale(1.1);
         }
     </style>
 </head>
 <body>
+    <header>
+        <h1>SparkBoard</h1>
+        <p class="tagline">Share your thoughts anonymously • No sign-up needed</p>
+    </header>
+    
     <div class="container">
-        <div class="welcome-section">
-            <h1>Welcome to Poplol</h1>
-            <p>Join our community today and experience the next generation of social networking. Create your account now or sign in to access your personalized dashboard.</p>
-        </div>
-        <div class="form-section">
-            <div class="form-container">
-                <h2 class="form-title" id="form-title">Sign In</h2>
-                
-                <div id="message" class="message"></div>
-                
-                <form id="login-form">
-                    <div class="form-group">
-                        <label for="login-email">Email</label>
-                        <input type="email" id="login-email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="login-password">Password</label>
-                        <input type="password" id="login-password" required>
-                        <span class="password-toggle" onclick="togglePassword('login-password')">👁️</span>
-                    </div>
-                    <button type="submit" class="btn">Sign In</button>
-                </form>
-                
-                <form id="signup-form" style="display: none;">
-                    <div class="form-group">
-                        <label for="signup-name">Full Name</label>
-                        <input type="text" id="signup-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signup-email">Email</label>
-                        <input type="email" id="signup-email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signup-password">Password</label>
-                        <input type="password" id="signup-password" required>
-                        <span class="password-toggle" onclick="togglePassword('signup-password')">👁️</span>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirm-password">Confirm Password</label>
-                        <input type="password" id="confirm-password" required>
-                        <span class="password-toggle" onclick="togglePassword('confirm-password')">👁️</span>
-                    </div>
-                    <button type="submit" class="btn">Create Account</button>
-                </form>
-                
-                <div class="toggle-form">
-                    <span id="toggle-text">Don't have an account?</span>
-                    <a id="toggle-link" onclick="toggleForm()">Sign Up</a>
+        <div class="card">
+            <h2>Share Your Spark</h2>
+            <form class="post-form" id="postForm">
+                <textarea 
+                    id="postContent" 
+                    placeholder="What's on your mind? Share your thoughts, ideas, or questions..."
+                    maxlength="500"
+                ></textarea>
+                <div class="char-count">
+                    <span id="charCount">0</span>/500
                 </div>
-            </div>
+                <button type="submit" class="btn" id="submitBtn">
+                    <span>Post Your Spark</span>
+                </button>
+            </form>
+        </div>
+        
+        <div id="postsContainer" class="posts-container">
+            <div class="loading">Loading sparks...</div>
         </div>
     </div>
-
+    
+    <button class="floating-btn" id="scrollToTopBtn">↑</button>
+    
+    <div class="notification" id="notification">Post submitted successfully!</div>
+    
     <script>
         // Firebase configuration
         const firebaseConfig = {
@@ -294,144 +314,241 @@
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
+        const db = firebase.firestore();
 
         // DOM Elements
-        const loginForm = document.getElementById('login-form');
-        const signupForm = document.getElementById('signup-form');
-        const messageDiv = document.getElementById('message');
-        const formTitle = document.getElementById('form-title');
-        const toggleText = document.getElementById('toggle-text');
-        const toggleLink = document.getElementById('toggle-link');
+        const postForm = document.getElementById('postForm');
+        const postContent = document.getElementById('postContent');
+        const charCount = document.getElementById('charCount');
+        const submitBtn = document.getElementById('submitBtn');
+        const postsContainer = document.getElementById('postsContainer');
+        const notification = document.getElementById('notification');
+        const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 
-        // Toggle between login and signup forms
-        function toggleForm() {
-            if (loginForm.style.display === 'none') {
-                // Switch to login
-                loginForm.style.display = 'block';
-                signupForm.style.display = 'none';
-                formTitle.textContent = 'Sign In';
-                toggleText.textContent = "Don't have an account?";
-                toggleLink.textContent = 'Sign Up';
-            } else {
-                // Switch to signup
-                loginForm.style.display = 'none';
-                signupForm.style.display = 'block';
-                formTitle.textContent = 'Create Account';
-                toggleText.textContent = "Already have an account?";
-                toggleLink.textContent = 'Sign In';
-            }
-            // Clear any existing messages
-            hideMessage();
-        }
-
-        // Show message
-        function showMessage(message, type) {
-            messageDiv.textContent = message;
-            messageDiv.className = `message ${type}`;
-            messageDiv.style.display = 'block';
-        }
-
-        // Hide message
-        function hideMessage() {
-            messageDiv.style.display = 'none';
-        }
-
-        // Toggle password visibility
-        function togglePassword(inputId) {
-            const input = document.getElementById(inputId);
-            if (input.type === 'password') {
-                input.type = 'text';
-            } else {
-                input.type = 'password';
-            }
-        }
-
-        // Handle login form submission
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Signed in
-                    const user = userCredential.user;
-                    showMessage(`Welcome back, ${user.email}!`, 'success');
-                    // Redirect or update UI as needed
-                })
-                .catch((error) => {
-                    const errorCode = error.code;
-                    let errorMessage = error.message;
-                    
-                    if (errorCode === 'auth/user-not-found') {
-                        errorMessage = 'No account found with this email.';
-                    } else if (errorCode === 'auth/wrong-password') {
-                        errorMessage = 'Incorrect password.';
-                    }
-                    
-                    showMessage(errorMessage, 'error');
-                });
+        // Character count update
+        postContent.addEventListener('input', () => {
+            charCount.textContent = postContent.value.length;
         });
 
-        // Handle signup form submission
-        signupForm.addEventListener('submit', (e) => {
+        // Submit post
+        postForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('signup-name').value;
-            const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
-            const confirmPassword = document.getElementById('confirm-password').value;
             
-            // Check if passwords match
-            if (password !== confirmPassword) {
-                showMessage('Passwords do not match.', 'error');
-                return;
+            const content = postContent.value.trim();
+            if (!content) return;
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>Posting...</span>';
+            
+            try {
+                // Generate a random anonymous identifier for the user
+                const anonymousId = 'user_' + Math.random().toString(36).substring(2, 9);
+                
+                await db.collection('posts').add({
+                    content: content,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    likes: 0,
+                    anonymousId: anonymousId,
+                    userLikes: [] // Track which anonymous users liked which posts
+                });
+                
+                // Show success notification
+                showNotification('Your spark has been shared!', 'success');
+                
+                // Reset form
+                postForm.reset();
+                charCount.textContent = '0';
+            } catch (error) {
+                console.error('Error adding post: ', error);
+                showNotification('Failed to post. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Post Your Spark</span>';
             }
+        });
+
+        // Load posts
+        function loadPosts() {
+            postsContainer.innerHTML = '<div class="loading">Loading sparks...</div>';
             
-            // Check password length
-            if (password.length < 6) {
-                showMessage('Password must be at least 6 characters.', 'error');
-                return;
-            }
-            
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Signed up
-                    const user = userCredential.user;
+            db.collection('posts')
+                .orderBy('timestamp', 'desc')
+                .onSnapshot(snapshot => {
+                    if (snapshot.empty) {
+                        postsContainer.innerHTML = `
+                            <div class="empty-state">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M8 12H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M12 16V8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                                <h3>No sparks yet</h3>
+                                <p>Be the first to share your thoughts!</p>
+                            </div>
+                        `;
+                        return;
+                    }
                     
-                    // Update user profile with name
-                    user.updateProfile({
-                        displayName: name
-                    }).then(() => {
-                        showMessage(`Account created successfully! Welcome, ${name}!`, 'success');
-                        // Redirect or update UI as needed
+                    postsContainer.innerHTML = '';
+                    
+                    snapshot.forEach(doc => {
+                        const post = doc.data();
+                        const postId = doc.id;
+                        
+                        // Generate a unique identifier for this user session
+                        let userId = localStorage.getItem('anonymousUserId');
+                        if (!userId) {
+                            userId = 'user_' + Math.random().toString(36).substring(2, 9);
+                            localStorage.setItem('anonymousUserId', userId);
+                        }
+                        
+                        // Check if current user has liked this post
+                        const userLikes = post.userLikes || [];
+                        const isLiked = userLikes.includes(userId);
+                        
+                        const postElement = document.createElement('div');
+                        postElement.className = 'card post';
+                        postElement.innerHTML = `
+                            <div class="post-content">${escapeHtml(post.content)}</div>
+                            <div class="post-meta">
+                                <span>${formatTime(post.timestamp?.toDate())}</span>
+                                <button class="reaction-btn ${isLiked ? 'active' : ''}" data-id="${postId}">
+                                    <span>${post.likes || 0}</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        `;
+                        
+                        postsContainer.appendChild(postElement);
                     });
-                })
-                .catch((error) => {
-                    const errorCode = error.code;
-                    let errorMessage = error.message;
                     
-                    if (errorCode === 'auth/email-already-in-use') {
-                        errorMessage = 'An account with this email already exists.';
-                    } else if (errorCode === 'auth/invalid-email') {
-                        errorMessage = 'Invalid email address.';
-                    } else if (errorCode === 'auth/weak-password') {
-                        errorMessage = 'Password is too weak.';
-                    }
-                    
-                    showMessage(errorMessage, 'error');
+                    // Add event listeners to like buttons
+                    document.querySelectorAll('.reaction-btn').forEach(btn => {
+                        btn.addEventListener('click', handleLike);
+                    });
+                }, error => {
+                    console.error('Error loading posts: ', error);
+                    postsContainer.innerHTML = '<div class="empty-state">Failed to load posts. Please refresh the page.</div>';
                 });
+        }
+
+        // Handle like functionality
+        async function handleLike(e) {
+            const postId = e.currentTarget.getAttribute('data-id');
+            const likeCountElement = e.currentTarget.querySelector('span');
+            const svgElement = e.currentTarget.querySelector('svg');
+            
+            // Get current user ID
+            let userId = localStorage.getItem('anonymousUserId');
+            if (!userId) {
+                userId = 'user_' + Math.random().toString(36).substring(2, 9);
+                localStorage.setItem('anonymousUserId', userId);
+            }
+            
+            try {
+                const postRef = db.collection('posts').doc(postId);
+                const postDoc = await postRef.get();
+                
+                if (!postDoc.exists) return;
+                
+                const post = postDoc.data();
+                const userLikes = post.userLikes || [];
+                const currentLikes = post.likes || 0;
+                
+                // Check if user already liked this post
+                const userIndex = userLikes.indexOf(userId);
+                
+                if (userIndex > -1) {
+                    // User already liked, so unlike
+                    userLikes.splice(userIndex, 1);
+                    await postRef.update({
+                        likes: currentLikes - 1,
+                        userLikes: userLikes
+                    });
+                    
+                    e.currentTarget.classList.remove('active');
+                    svgElement.setAttribute('fill', 'none');
+                } else {
+                    // User hasn't liked, so add like
+                    userLikes.push(userId);
+                    await postRef.update({
+                        likes: currentLikes + 1,
+                        userLikes: userLikes
+                    });
+                    
+                    e.currentTarget.classList.add('active');
+                    svgElement.setAttribute('fill', 'currentColor');
+                }
+                
+                // Update like count display
+                likeCountElement.textContent = userIndex > -1 ? currentLikes - 1 : currentLikes + 1;
+            } catch (error) {
+                console.error('Error updating like: ', error);
+                showNotification('Failed to update reaction. Please try again.', 'error');
+            }
+        }
+
+        // Utility functions
+        function formatTime(date) {
+            if (!date) return 'Just now';
+            
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            
+            return date.toLocaleDateString();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showNotification(message, type = 'success') {
+            notification.textContent = message;
+            notification.className = 'notification';
+            
+            if (type === 'error') {
+                notification.classList.add('error');
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Scroll to top functionality
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         });
 
-        // Listen for auth state changes
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                // User is signed in
-                console.log('User signed in:', user.email);
+        // Show/hide scroll to top button based on scroll position
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                scrollToTopBtn.style.display = 'flex';
             } else {
-                // User is signed out
-                console.log('User signed out');
+                scrollToTopBtn.style.display = 'none';
             }
+        });
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPosts();
         });
     </script>
 </body>
