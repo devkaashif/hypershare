@@ -3,73 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>No-Signup Code Sharing</title>
+    <title>CodeShare Pro | Instant Code Sharing</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --dark: #1e1e2e;
+            --darker: #161622;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --success: #4cc9f0;
+            --border-radius: 12px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s ease;
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            color: #fff;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
             min-height: 100vh;
-            padding: 20px;
+            line-height: 1.6;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 0 20px;
         }
         
         header {
-            text-align: center;
             padding: 30px 0;
-            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 40px;
         }
         
-        h1 {
-            font-size: 2.8rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .logo i {
+            color: var(--success);
+        }
+        
+        .tagline {
+            font-size: 1rem;
+            color: var(--gray);
+            margin-top: 5px;
         }
         
         .main-content {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 30px;
-            justify-content: center;
+            margin-bottom: 60px;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
         }
         
         .card {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 600px;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: var(--transition);
         }
         
-        .card h2 {
-            margin-bottom: 20px;
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card-header {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .card h2 i {
-            color: #fdbb2d;
+        .card-header i {
+            font-size: 1.5rem;
+            color: var(--success);
+        }
+        
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 600;
         }
         
         .form-group {
@@ -79,135 +128,270 @@
         label {
             display: block;
             margin-bottom: 8px;
-            font-weight: 600;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
         }
         
         input, textarea, select {
             width: 100%;
-            padding: 12px 15px;
-            border: none;
+            padding: 14px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.07);
             font-size: 1rem;
-            color: #333;
+            color: white;
+            transition: var(--transition);
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
         }
         
         textarea {
-            min-height: 200px;
+            min-height: 220px;
             resize: vertical;
-            font-family: monospace;
+            font-family: 'Courier New', monospace;
+            line-height: 1.5;
         }
         
-        button {
-            background: #fdbb2d;
-            color: #1a2a6c;
+        .btn {
+            background: var(--primary);
+            color: white;
             border: none;
-            padding: 12px 25px;
+            padding: 14px 24px;
             border-radius: 8px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             display: flex;
             align-items: center;
             gap: 8px;
         }
         
-        button:hover {
-            background: #ffcc44;
+        .btn:hover {
+            background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: var(--dark);
+        }
+        
+        .btn-success:hover {
+            background: #3ab7de;
         }
         
         .result {
-            margin-top: 20px;
-            padding: 15px;
+            margin-top: 25px;
+            padding: 20px;
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.07);
             display: none;
+            animation: fadeIn 0.5s ease;
         }
         
-        .result h3 {
-            margin-bottom: 10px;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
-        .url-display {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 5px;
-            word-break: break-all;
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 15px;
         }
         
-        .copy-btn {
-            background: #1a2a6c;
-            color: white;
+        .result-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--success);
         }
         
-        .view-code {
-            margin-top: 30px;
+        .url-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px 15px;
+            border-radius: 6px;
+            word-break: break-all;
+            margin-bottom: 15px;
+            font-family: monospace;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         
         .code-display {
-            background: #2d3748;
+            background: #1e1e2e;
             color: #e2e8f0;
             padding: 20px;
             border-radius: 8px;
             overflow-x: auto;
-            font-family: monospace;
+            font-family: 'Courier New', monospace;
             white-space: pre-wrap;
             margin-top: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            line-height: 1.5;
         }
         
         .language-tag {
             display: inline-block;
-            background: #fdbb2d;
-            color: #1a2a6c;
-            padding: 5px 10px;
+            background: var(--secondary);
+            color: white;
+            padding: 6px 12px;
             border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+        
+        .meta-info {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            color: var(--gray);
             font-size: 0.9rem;
-            margin-bottom: 10px;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-top: 5px;
         }
         
         footer {
             text-align: center;
+            padding: 30px 0;
             margin-top: 50px;
-            padding: 20px;
-            opacity: 0.8;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--gray);
+            font-size: 0.9rem;
         }
         
-        @media (max-width: 768px) {
-            .main-content {
-                flex-direction: column;
-            }
-            
-            .card {
-                max-width: 100%;
-            }
-            
-            h1 {
-                font-size: 2.2rem;
-            }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: var(--success);
+            color: var(--dark);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-code"></i> CodeShare</h1>
-            <p class="subtitle">Share your code snippets instantly - No sign up required!</p>
+            <div class="header-content">
+                <div>
+                    <div class="logo">
+                        <i class="fas fa-code"></i>
+                        <span>CodeShare Pro</span>
+                    </div>
+                    <div class="tagline">Share code instantly without signing up</div>
+                </div>
+                <div class="meta-info">
+                    <div class="meta-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Secure & Private</span>
+                    </div>
+                </div>
+            </div>
         </header>
         
         <div class="main-content">
             <div class="card">
-                <h2><i class="fas fa-share-alt"></i> Share Your Code</h2>
-                <div class="form-group">
-                    <label for="codeTitle">Title (optional)</label>
-                    <input type="text" id="codeTitle" placeholder="Give your code snippet a title">
+                <div class="card-header">
+                    <i class="fas fa-paper-plane"></i>
+                    <h2 class="card-title">Share New Code</h2>
                 </div>
                 
                 <div class="form-group">
-                    <label for="codeLanguage">Language</label>
+                    <label for="codeTitle">Title</label>
+                    <input type="text" id="codeTitle" placeholder="Give your code snippet a descriptive title">
+                </div>
+                
+                <div class="form-group">
+                    <label for="codeLanguage">Programming Language</label>
                     <select id="codeLanguage">
                         <option value="javascript">JavaScript</option>
                         <option value="html">HTML</option>
@@ -216,52 +400,104 @@
                         <option value="java">Java</option>
                         <option value="cpp">C++</option>
                         <option value="php">PHP</option>
+                        <option value="sql">SQL</option>
+                        <option value="swift">Swift</option>
                         <option value="other">Other</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
-                    <label for="codeContent">Your Code</label>
+                    <label for="codeContent">Code Snippet</label>
                     <textarea id="codeContent" placeholder="Paste your code here..."></textarea>
                 </div>
                 
-                <button id="shareBtn">
-                    <i class="fas fa-paper-plane"></i> Share Code
+                <button id="shareBtn" class="btn">
+                    <i class="fas fa-share"></i> Share Code
                 </button>
                 
                 <div class="result" id="shareResult">
-                    <h3>Your code has been shared!</h3>
+                    <div class="result-header">
+                        <div class="result-title">Your code has been shared!</div>
+                        <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                    </div>
                     <p>Share this URL with others:</p>
                     <div class="url-display" id="shareUrl"></div>
-                    <button class="copy-btn" id="copyBtn">
-                        <i class="fas fa-copy"></i> Copy URL
-                    </button>
+                    <div class="action-buttons">
+                        <button class="btn btn-success" id="copyBtn">
+                            <i class="fas fa-copy"></i> Copy URL
+                        </button>
+                        <button class="btn btn-secondary" id="newSnippetBtn">
+                            <i class="fas fa-plus"></i> New Snippet
+                        </button>
+                    </div>
                 </div>
             </div>
             
-            <div class="card view-code">
-                <h2><i class="fas fa-eye"></i> View Shared Code</h2>
-                <p>Enter a code ID to view a shared code snippet:</p>
-                
-                <div class="form-group">
-                    <input type="text" id="codeId" placeholder="Enter code ID">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-eye"></i>
+                    <h2 class="card-title">View Shared Code</h2>
                 </div>
                 
-                <button id="viewBtn">
+                <div class="form-group">
+                    <label for="codeId">Code ID or URL</label>
+                    <input type="text" id="codeId" placeholder="Enter code ID or paste the full URL">
+                </div>
+                
+                <button id="viewBtn" class="btn">
                     <i class="fas fa-search"></i> View Code
                 </button>
                 
                 <div class="result" id="viewResult">
-                    <h3 id="viewTitle"></h3>
-                    <span class="language-tag" id="viewLanguage"></span>
+                    <div class="result-header">
+                        <h3 id="viewTitle" class="result-title"></h3>
+                        <span class="language-tag" id="viewLanguage"></span>
+                    </div>
+                    <div class="meta-info">
+                        <div class="meta-item">
+                            <i class="far fa-calendar"></i>
+                            <span id="viewDate"></span>
+                        </div>
+                    </div>
                     <div class="code-display" id="viewCode"></div>
+                    <div class="action-buttons" style="margin-top: 20px;">
+                        <button class="btn btn-secondary" id="copyCodeBtn">
+                            <i class="fas fa-copy"></i> Copy Code
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="empty-state" id="emptyState">
+                    <i class="fas fa-file-code"></i>
+                    <h3>No code to display</h3>
+                    <p>Enter a Code ID or URL to view a shared code snippet</p>
                 </div>
             </div>
         </div>
         
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="snippetsCount">0</div>
+                <div class="stat-label">Snippets Shared</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="todayCount">0</div>
+                <div class="stat-label">Today</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">∞</div>
+                <div class="stat-label">No Sign-up Required</div>
+            </div>
+        </div>
+        
         <footer>
-            <p>CodeShare &copy; 2023 | Share code without signing up</p>
+            <p>CodeShare Pro &copy; 2023 | Share code instantly without creating an account</p>
         </footer>
+    </div>
+    
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">URL copied to clipboard!</span>
     </div>
 
     <script>
@@ -284,27 +520,58 @@
         const shareBtn = document.getElementById('shareBtn');
         const viewBtn = document.getElementById('viewBtn');
         const copyBtn = document.getElementById('copyBtn');
+        const copyCodeBtn = document.getElementById('copyCodeBtn');
+        const newSnippetBtn = document.getElementById('newSnippetBtn');
         const shareResult = document.getElementById('shareResult');
         const viewResult = document.getElementById('viewResult');
+        const emptyState = document.getElementById('emptyState');
+        const toast = document.getElementById('toast');
+        const snippetsCount = document.getElementById('snippetsCount');
+        const todayCount = document.getElementById('todayCount');
 
         // Generate a random ID for the code snippet
         function generateId() {
-            return Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 10; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // Show toast notification
+        function showToast(message) {
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
         }
 
         // Share code function
         shareBtn.addEventListener('click', async () => {
-            const title = document.getElementById('codeTitle').value || 'Untitled';
+            const title = document.getElementById('codeTitle').value.trim() || 'Untitled Snippet';
             const language = document.getElementById('codeLanguage').value;
-            const content = document.getElementById('codeContent').value;
+            const content = document.getElementById('codeContent').value.trim();
             
             if (!content) {
-                alert('Please enter some code to share!');
+                showToast('Please enter some code to share!');
                 return;
             }
             
             const id = generateId();
             const timestamp = new Date().toISOString();
+            
+            // Show loading state
+            const originalText = shareBtn.innerHTML;
+            shareBtn.innerHTML = '<div class="loading"></div> Sharing...';
+            shareBtn.disabled = true;
             
             try {
                 // Save to Firestore
@@ -320,23 +587,43 @@
                 document.getElementById('shareUrl').textContent = shareUrl;
                 shareResult.style.display = 'block';
                 
+                // Update stats
+                updateStats();
+                
                 // Clear the form
                 document.getElementById('codeTitle').value = '';
                 document.getElementById('codeContent').value = '';
+                
+                showToast('Code shared successfully!');
             } catch (error) {
                 console.error('Error sharing code: ', error);
-                alert('Error sharing code. Please try again.');
+                showToast('Error sharing code. Please try again.');
+            } finally {
+                // Reset button state
+                shareBtn.innerHTML = originalText;
+                shareBtn.disabled = false;
             }
         });
 
         // View code function
         viewBtn.addEventListener('click', async () => {
-            const codeId = document.getElementById('codeId').value;
+            let codeId = document.getElementById('codeId').value.trim();
+            
+            // Extract ID from URL if full URL is provided
+            if (codeId.includes('?')) {
+                const urlParams = new URLSearchParams(codeId.split('?')[1]);
+                codeId = urlParams.get('id');
+            }
             
             if (!codeId) {
-                alert('Please enter a code ID!');
+                showToast('Please enter a code ID!');
                 return;
             }
+            
+            // Show loading state
+            const originalText = viewBtn.innerHTML;
+            viewBtn.innerHTML = '<div class="loading"></div> Loading...';
+            viewBtn.disabled = true;
             
             try {
                 const doc = await db.collection('codes').doc(codeId).get();
@@ -346,13 +633,22 @@
                     document.getElementById('viewTitle').textContent = data.title;
                     document.getElementById('viewLanguage').textContent = data.language.toUpperCase();
                     document.getElementById('viewCode').textContent = data.content;
+                    document.getElementById('viewDate').textContent = formatDate(data.timestamp);
+                    
                     viewResult.style.display = 'block';
+                    emptyState.style.display = 'none';
                 } else {
-                    alert('Code not found. Please check the ID and try again.');
+                    showToast('Code not found. Please check the ID and try again.');
+                    emptyState.style.display = 'block';
+                    viewResult.style.display = 'none';
                 }
             } catch (error) {
                 console.error('Error viewing code: ', error);
-                alert('Error viewing code. Please try again.');
+                showToast('Error viewing code. Please try again.');
+            } finally {
+                // Reset button state
+                viewBtn.innerHTML = originalText;
+                viewBtn.disabled = false;
             }
         });
 
@@ -360,13 +656,47 @@
         copyBtn.addEventListener('click', () => {
             const url = document.getElementById('shareUrl').textContent;
             navigator.clipboard.writeText(url).then(() => {
-                const originalText = copyBtn.innerHTML;
-                copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                setTimeout(() => {
-                    copyBtn.innerHTML = originalText;
-                }, 2000);
+                showToast('URL copied to clipboard!');
             });
         });
+
+        // Copy code function
+        copyCodeBtn.addEventListener('click', () => {
+            const code = document.getElementById('viewCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showToast('Code copied to clipboard!');
+            });
+        });
+
+        // New snippet button
+        newSnippetBtn.addEventListener('click', () => {
+            shareResult.style.display = 'none';
+        });
+
+        // Update stats
+        async function updateStats() {
+            try {
+                const snapshot = await db.collection('codes').get();
+                const totalSnippets = snapshot.size;
+                
+                // Calculate today's count
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const todayISO = today.toISOString();
+                
+                let todaySnippets = 0;
+                snapshot.forEach(doc => {
+                    if (doc.data().timestamp >= todayISO) {
+                        todaySnippets++;
+                    }
+                });
+                
+                snippetsCount.textContent = totalSnippets;
+                todayCount.textContent = todaySnippets;
+            } catch (error) {
+                console.error('Error updating stats: ', error);
+            }
+        }
 
         // Check if there's a code ID in the URL
         window.addEventListener('DOMContentLoaded', () => {
@@ -377,6 +707,9 @@
                 document.getElementById('codeId').value = codeId;
                 viewBtn.click();
             }
+            
+            // Initialize stats
+            updateStats();
         });
     </script>
 </body>
