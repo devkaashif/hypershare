@@ -1,312 +1,674 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Core Sharing — simple snippet share</title>
-  <style>
-    /* Minimal, self-contained styling so it won't affect other pages when embedded */
-    :root{ --bg:#0f1724; --card:#0b1220; --muted:#9aa4b2; --accent:#4f46e5; --success:#16a34a; --danger:#ef4444; --glass: rgba(255,255,255,0.03)}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;color:#e6eef6;background:linear-gradient(180deg,#071226 0%, #071429 100%);display:flex;align-items:center;justify-content:center;padding:20px}
-    .wrap{width:100%;max-width:980px}
-    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-    h1{margin:0;font-size:20px}
-    .grid{display:grid;grid-template-columns:1fr 360px;gap:16px}
-    .card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
-    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-    input[type="text"], select, textarea{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit;resize:vertical}
-    textarea{min-height:180px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;font-size:13px}
-    button{padding:10px 12px;border-radius:10px;border:0;background:var(--accent);color:white;cursor:pointer}
-    .muted{color:var(--muted);font-size:13px}
-    .list{max-height:420px;overflow:auto;margin-top:12px}
-    .item{padding:10px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:space-between;gap:8px}
-    .smallbtn{padding:6px 8px;border-radius:8px;border:0;background:#0ea5a0;color:white;cursor:pointer;font-size:13px}
-    .danger{background:var(--danger)}
-    .meta{font-size:12px;color:var(--muted)}
-    .note{font-size:13px;color:var(--muted);margin-top:10px}
-    footer{margin-top:14px;text-align:center;color:var(--muted);font-size:13px}
-    @media(max-width:880px){ .grid{grid-template-columns:1fr} }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Sharing System</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(to right, #4A00E0, #8E2DE2);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .app-description {
+            font-size: 1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 500px;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .tab-button {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-button.active {
+            color: #4A00E0;
+            border-bottom: 3px solid #4A00E0;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #4A00E0;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            background: linear-gradient(to right, #4A00E0, #8E2DE2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        button.secondary {
+            background: #f0f0f0;
+            color: #444;
+        }
+
+        .shared-item {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4A00E0;
+        }
+
+        .shared-item h3 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .shared-item p {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .shared-item .meta {
+            font-size: 0.85rem;
+            color: #888;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .auth-section {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #4A00E0;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .user-details {
+            text-align: left;
+        }
+
+        .user-details .user-name {
+            font-weight: bold;
+        }
+
+        .user-details .user-email {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .notification {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .notification.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .notification.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .share-link {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        .share-link input {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-right: none;
+        }
+
+        .share-link button {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            padding: 12px 15px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: #f5f5f5;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1>Core Sharing — Snippet Share</h1>
-      <div class="muted">Simple Firestore-based shareable snippets</div>
-    </header>
-
-    <div class="grid">
-      <!-- Left: editor/list -->
-      <div class="card">
-        <div>
-          <label for="title">Title</label>
-          <input id="title" placeholder="Short title (e.g. My App config)" />
-        </div>
-
-        <div style="margin-top:10px">
-          <label for="lang">Language / Type</label>
-          <select id="lang">
-            <option>text</option>
-            <option>javascript</option>
-            <option>html</option>
-            <option>css</option>
-            <option>json</option>
-            <option>bash</option>
-          </select>
-        </div>
-
-        <div style="margin-top:10px">
-          <label for="content">Content</label>
-          <textarea id="content" placeholder="Paste your core snippet here..."></textarea>
-        </div>
-
-        <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
-          <button id="saveBtn">Save & generate link</button>
-          <button id="clearBtn" style="background:#111827">Clear</button>
-          <div id="status" class="muted" style="margin-left:8px"></div>
-        </div>
-
-        <div class="note">Saved snippets are public. Delete is allowed only if you know the internal owner token (stored in localStorage) created on save.</div>
-
-        <section style="margin-top:14px">
-          <label>Recent snippets</label>
-          <div id="list" class="list"></div>
-        </section>
-      </div>
-
-      <!-- Right: view/share -->
-      <div class="card">
-        <div id="viewer">
-          <label>Open by share ID (from link)</label>
-          <div style="display:flex;gap:8px">
-            <input id="openId" placeholder="paste SHAREID or open via URL param" />
-            <button id="openBtn" class="smallbtn">Open</button>
-          </div>
-
-          <div id="snippetCard" style="margin-top:12px;display:none">
-            <div style="display:flex;justify-content:space-between;align-items:start">
-              <div>
-                <div id="sTitle" style="font-weight:600"></div>
-                <div id="sMeta" class="meta"></div>
-              </div>
-              <div style="display:flex;gap:8px">
-                <button id="copyLink" class="smallbtn">Copy link</button>
-                <button id="deleteBtn" class="smallbtn danger">Delete</button>
-              </div>
+    <div class="container">
+        <header>
+            <h1>Core Sharing System</h1>
+            <p class="app-description">Securely create, share, and access content with others using Firebase authentication and storage.</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="auth-section">
+                    <div class="user-info" id="userInfo" style="display: none;">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <div class="user-details">
+                            <div class="user-name" id="userName">User Name</div>
+                            <div class="user-email" id="userEmail">user@example.com</div>
+                        </div>
+                    </div>
+                    <button id="signInButton">Sign In with Google</button>
+                    <button id="signOutButton" style="display: none;">Sign Out</button>
+                </div>
+                
+                <div class="notification" id="notification"></div>
+                
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab="create">Create Share</button>
+                    <button class="tab-button" data-tab="shared">My Shares</button>
+                    <button class="tab-button" data-tab="access">Access Shared</button>
+                </div>
             </div>
-            <pre id="sContent" style="white-space:pre-wrap;margin-top:10px;padding:8px;border-radius:8px;background:rgba(0,0,0,0.25);font-family:ui-monospace,monospace;font-size:13px"></pre>
-          </div>
+            
+            <div class="content-area">
+                <div id="createTab" class="tab-content active">
+                    <h2>Create New Share</h2>
+                    <form id="shareForm">
+                        <div class="form-group">
+                            <label for="shareTitle">Title</label>
+                            <input type="text" id="shareTitle" placeholder="Enter a title for your share" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="shareContent">Content</label>
+                            <textarea id="shareContent" placeholder="Enter the content you want to share" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="shareType">Share Type</label>
+                            <select id="shareType">
+                                <option value="public">Public (Anyone with link)</option>
+                                <option value="private">Private (Only specific users)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="emailsField" style="display: none;">
+                            <label for="shareEmails">Share With (Email addresses, separated by commas)</label>
+                            <input type="text" id="shareEmails" placeholder="user1@example.com, user2@example.com">
+                        </div>
+                        
+                        <button type="submit">Create Share</button>
+                    </form>
+                </div>
+                
+                <div id="sharedTab" class="tab-content">
+                    <h2>My Shared Items</h2>
+                    <div id="sharedItemsList">
+                        <div class="loading">Loading your shared items...</div>
+                    </div>
+                </div>
+                
+                <div id="accessTab" class="tab-content">
+                    <h2>Access Shared Content</h2>
+                    <div class="form-group">
+                        <label for="shareCode">Share Code</label>
+                        <input type="text" id="shareCode" placeholder="Enter the share code provided to you">
+                        <button id="accessShareButton">Access Share</button>
+                    </div>
+                    
+                    <div id="sharedContent" style="display: none;">
+                        <div class="shared-item">
+                            <h3 id="accessedTitle">Title</h3>
+                            <p id="accessedContent">Content will appear here</p>
+                            <div class="meta">
+                                <span id="accessedAuthor">Shared by: User</span>
+                                <span id="accessedDate">Date: Unknown</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-
+        
         <footer>
-          <div class="meta">Built with Firestore (client-side). Not for secret keys. Use only public snippets.</div>
+            <p>Core Sharing System &copy; 2023 | Powered by Firebase</p>
         </footer>
-      </div>
     </div>
-  </div>
 
-  <!-- Firebase v9 compat CDN scripts -->
-  <!-- Using compat CDN lets us run without bundlers while using Firestore. See Firebase docs. -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD0T-mS__FlN3QASJnmD0K6S5VNDiN2bxQ",
+            authDomain: "poplol-7209f.firebaseapp.com",
+            projectId: "poplol-7209f",
+            storageBucket: "poplol-7209f.firebasestorage.app",
+            messagingSenderId: "1058108342269",
+            appId: "1:1058108342269:web:577700a7503b3db8316394",
+            measurementId: "G-EXR6CPBH5R"
+        };
 
-  <script>
-  // ---------- Replace or confirm: your Firebase config (already provided) ----------
-  const firebaseConfig = {
-    apiKey: "AIzaSyD0T-mS__FlN3QASJnmD0K6S5VNDiN2bxQ",
-    authDomain: "poplol-7209f.firebaseapp.com",
-    projectId: "poplol-7209f",
-    storageBucket: "poplol-7209f.firebasestorage.app",
-    messagingSenderId: "1058108342269",
-    appId: "1:1058108342269:web:577700a7503b3db8316394",
-    measurementId: "G-EXR6CPBH5R"
-  };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-  // Initialize Firebase & Firestore (compat style)
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+        // DOM elements
+        const signInButton = document.getElementById('signInButton');
+        const signOutButton = document.getElementById('signOutButton');
+        const userInfo = document.getElementById('userInfo');
+        const userAvatar = document.getElementById('userAvatar');
+        const userName = document.getElementById('userName');
+        const userEmail = document.getElementById('userEmail');
+        const notification = document.getElementById('notification');
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const shareForm = document.getElementById('shareForm');
+        const shareType = document.getElementById('shareType');
+        const emailsField = document.getElementById('emailsField');
+        const sharedItemsList = document.getElementById('sharedItemsList');
+        const accessShareButton = document.getElementById('accessShareButton');
+        const shareCode = document.getElementById('shareCode');
+        const sharedContent = document.getElementById('sharedContent');
+        const accessedTitle = document.getElementById('accessedTitle');
+        const accessedContent = document.getElementById('accessedContent');
+        const accessedAuthor = document.getElementById('accessedAuthor');
+        const accessedDate = document.getElementById('accessedDate');
 
-  // Helpers
-  const $ = id => document.getElementById(id);
-  const makeId = (len=8) => {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let r=''; for(let i=0;i<len;i++) r += chars[Math.floor(Math.random()*chars.length)];
-    return r;
-  };
+        // Tab switching functionality
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabId = button.getAttribute('data-tab');
+                
+                // Update active tab button
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Show corresponding tab content
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === `${tabId}Tab`) {
+                        content.classList.add('active');
+                    }
+                });
+                
+                // If viewing shared items, load them
+                if (tabId === 'shared') {
+                    loadUserShares();
+                }
+            });
+        });
 
-  // Local owner token mechanism: generated at save and stored in localStorage;
-  // allows deletion only if token matches. This is a minimal client-side protection.
-  const OWNER_TOKEN_KEY = 'core_sharing_owner_token';
+        // Show/hide email field based on share type
+        shareType.addEventListener('change', () => {
+            if (shareType.value === 'private') {
+                emailsField.style.display = 'block';
+            } else {
+                emailsField.style.display = 'none';
+            }
+        });
 
-  // Save snippet
-  $('saveBtn').addEventListener('click', async () => {
-    const title = $('title').value.trim() || 'Untitled';
-    const language = $('lang').value || 'text';
-    const content = $('content').value.trim();
-    if (!content) { setStatus('Please add content before saving', true); return; }
+        // Authentication state observer
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // User is signed in
+                signInButton.style.display = 'none';
+                signOutButton.style.display = 'block';
+                userInfo.style.display = 'flex';
+                
+                // Update user info
+                userName.textContent = user.displayName || 'User';
+                userEmail.textContent = user.email;
+                userAvatar.textContent = user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U';
+                
+                showNotification('Signed in successfully!', 'success');
+            } else {
+                // User is signed out
+                signInButton.style.display = 'block';
+                signOutButton.style.display = 'none';
+                userInfo.style.display = 'none';
+                
+                showNotification('Please sign in to use the sharing system.', 'error');
+            }
+        });
 
-    setStatus('Saving...');
-    try {
-      const shareId = makeId(10);
-      const ownerToken = localStorage.getItem(OWNER_TOKEN_KEY) || makeId(24);
-      localStorage.setItem(OWNER_TOKEN_KEY, ownerToken);
+        // Sign in with Google
+        signInButton.addEventListener('click', () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .catch(error => {
+                    console.error('Sign in error:', error);
+                    showNotification('Sign in failed. Please try again.', 'error');
+                });
+        });
 
-      const doc = {
-        title,
-        language,
-        content,
-        shareId,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        ownerToken
-      };
-      // write to collection "snippets", store doc with custom shareId as field but let Firestore auto-id the doc
-      await db.collection('snippets').add(doc);
+        // Sign out
+        signOutButton.addEventListener('click', () => {
+            auth.signOut();
+            showNotification('Signed out successfully.', 'success');
+        });
 
-      const link = buildShareLink(shareId);
-      setStatus('Saved. Link ready.');
-      showSavedLink(link);
-      loadRecent(); // refresh list
-    } catch (err) {
-      console.error(err);
-      setStatus('Save failed: '+err.message, true);
-    }
-  });
+        // Create a new share
+        shareForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const user = auth.currentUser;
+            if (!user) {
+                showNotification('Please sign in to create a share.', 'error');
+                return;
+            }
+            
+            const title = document.getElementById('shareTitle').value;
+            const content = document.getElementById('shareContent').value;
+            const type = shareType.value;
+            const emails = type === 'private' ? 
+                document.getElementById('shareEmails').value.split(',').map(email => email.trim()) : [];
+            
+            // Generate a unique share code
+            const shareCode = generateShareCode();
+            
+            try {
+                // Save to Firestore
+                await db.collection('shares').add({
+                    title,
+                    content,
+                    type,
+                    emails,
+                    shareCode,
+                    author: user.uid,
+                    authorName: user.displayName || user.email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    accessedBy: []
+                });
+                
+                showNotification('Share created successfully! Share code: ' + shareCode, 'success');
+                shareForm.reset();
+                
+                // Switch to shared items tab
+                document.querySelector('[data-tab="shared"]').click();
+            } catch (error) {
+                console.error('Error creating share:', error);
+                showNotification('Failed to create share. Please try again.', 'error');
+            }
+        });
 
-  // Clear button
-  $('clearBtn').addEventListener('click', () => {
-    $('title').value = '';
-    $('content').value = '';
-    $('lang').value = 'text';
-    setStatus('');
-  });
+        // Load user's shared items
+        async function loadUserShares() {
+            const user = auth.currentUser;
+            if (!user) {
+                sharedItemsList.innerHTML = '<div class="notification error">Please sign in to view your shares.</div>';
+                return;
+            }
+            
+            try {
+                const sharesSnapshot = await db.collection('shares')
+                    .where('author', '==', user.uid)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+                
+                if (sharesSnapshot.empty) {
+                    sharedItemsList.innerHTML = '<div class="notification">You haven\'t created any shares yet.</div>';
+                    return;
+                }
+                
+                let html = '';
+                sharesSnapshot.forEach(doc => {
+                    const share = doc.data();
+                    const date = share.createdAt ? share.createdAt.toDate().toLocaleDateString() : 'Unknown';
+                    
+                    html += `
+                        <div class="shared-item">
+                            <h3>${share.title}</h3>
+                            <p>${share.content.substring(0, 100)}${share.content.length > 100 ? '...' : ''}</p>
+                            <div class="meta">
+                                <span>Type: ${share.type}</span>
+                                <span>Created: ${date}</span>
+                            </div>
+                            <div class="share-link">
+                                <input type="text" value="${share.shareCode}" readonly>
+                                <button onclick="copyShareCode('${share.shareCode}')">Copy</button>
+                            </div>
+                            <p><small>Share this code with others to let them access your content</small></p>
+                        </div>
+                    `;
+                });
+                
+                sharedItemsList.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading shares:', error);
+                sharedItemsList.innerHTML = '<div class="notification error">Failed to load your shares.</div>';
+            }
+        }
 
-  // Build share URL (uses current page origin + ?id=)
-  function buildShareLink(shareId) {
-    return location.origin + location.pathname + '?id=' + encodeURIComponent(shareId);
-  }
+        // Access shared content
+        accessShareButton.addEventListener('click', async () => {
+            const code = shareCode.value.trim();
+            if (!code) {
+                showNotification('Please enter a share code.', 'error');
+                return;
+            }
+            
+            try {
+                const sharesSnapshot = await db.collection('shares')
+                    .where('shareCode', '==', code)
+                    .get();
+                
+                if (sharesSnapshot.empty) {
+                    showNotification('Invalid share code. Please check and try again.', 'error');
+                    return;
+                }
+                
+                const shareDoc = sharesSnapshot.docs[0];
+                const share = shareDoc.data();
+                
+                // Check if share is private and user is authorized
+                const user = auth.currentUser;
+                if (share.type === 'private') {
+                    if (!user || !share.emails.includes(user.email)) {
+                        showNotification('You are not authorized to access this private share.', 'error');
+                        return;
+                    }
+                }
+                
+                // Update accessedBy if user is signed in
+                if (user) {
+                    await db.collection('shares').doc(shareDoc.id).update({
+                        accessedBy: firebase.firestore.FieldValue.arrayUnion(user.uid)
+                    });
+                }
+                
+                // Display the shared content
+                accessedTitle.textContent = share.title;
+                accessedContent.textContent = share.content;
+                accessedAuthor.textContent = `Shared by: ${share.authorName}`;
+                accessedDate.textContent = `Date: ${share.createdAt ? share.createdAt.toDate().toLocaleDateString() : 'Unknown'}`;
+                
+                sharedContent.style.display = 'block';
+                showNotification('Share accessed successfully!', 'success');
+            } catch (error) {
+                console.error('Error accessing share:', error);
+                showNotification('Failed to access share. Please try again.', 'error');
+            }
+        });
 
-  // Show saved link in the 'openId' box for quick copy
-  function showSavedLink(link) {
-    $('openId').value = link;
-    // auto-select so user can copy quickly
-    $('openId').select();
-  }
+        // Utility functions
+        function generateShareCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 8; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
 
-  function setStatus(text, isError=false) {
-    const s = $('status');
-    s.textContent = text||'';
-    s.style.color = isError ? 'var(--danger)' : 'inherit';
-  }
+        function copyShareCode(code) {
+            navigator.clipboard.writeText(code)
+                .then(() => {
+                    showNotification('Share code copied to clipboard!', 'success');
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    showNotification('Failed to copy share code.', 'error');
+                });
+        }
 
-  // Load recent snippets (simple query: last 20 ordered by createdAt desc)
-  async function loadRecent(){
-    const container = $('list');
-    container.innerHTML = '';
-    try {
-      const q = await db.collection('snippets').orderBy('createdAt','desc').limit(20).get();
-      if (q.empty) { container.innerHTML = '<div class="muted">No snippets yet</div>'; return; }
-      q.forEach(doc => {
-        const data = doc.data();
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.innerHTML = `
-          <div style="min-width:0">
-            <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(data.title||'Untitled')}</div>
-            <div class="meta">${escapeHtml(data.language||'text')} • ${data.shareId || ''}</div>
-          </div>
-          <div style="display:flex;gap:6px;align-items:center">
-            <button class="smallbtn" data-share="${data.shareId}">Open</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
+        function showNotification(message, type) {
+            notification.textContent = message;
+            notification.className = 'notification ' + type;
+            notification.style.display = 'block';
+            
+            // Hide notification after 5 seconds
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
 
-      // attach open handlers
-      container.querySelectorAll('button[data-share]').forEach(btn=>{
-        btn.addEventListener('click', ()=> openByShareId(btn.dataset.share));
-      });
-
-    } catch(e){
-      container.innerHTML = '<div class="muted">Failed to load recent</div>';
-      console.error(e);
-    }
-  }
-
-  // Open snippet by shareId
-  async function openByShareId(shareIdOrLink){
-    let id = shareIdOrLink || $('openId').value.trim();
-    // If the user pasted full URL, extract id parameter
-    try {
-      const url = new URL(id, location.href);
-      if (url.searchParams.get('id')) id = url.searchParams.get('id');
-    } catch(e) { /*not a url*/ }
-
-    if (!id) { setStatus('Provide a share id or link', true); return; }
-    setStatus('Loading...');
-    try {
-      const q = await db.collection('snippets').where('shareId','==',id).limit(1).get();
-      if (q.empty) { setStatus('Snippet not found', true); showSnippet(null); return; }
-      const doc = q.docs[0];
-      const data = doc.data();
-      showSnippet({ docId: doc.id, data });
-      setStatus('');
-    } catch(e){
-      setStatus('Open failed: '+e.message, true);
-      console.error(e);
-    }
-  }
-
-  function showSnippet(obj) {
-    const card = $('snippetCard');
-    if (!obj){ card.style.display='none'; return; }
-    card.style.display='block';
-    $('sTitle').textContent = obj.data.title || 'Untitled';
-    const created = obj.data.createdAt && obj.data.createdAt.toDate ? obj.data.createdAt.toDate().toLocaleString() : '';
-    $('sMeta').textContent = (obj.data.language || 'text') + (created ? ' • ' + created : '') + ' • ' + (obj.data.shareId || '');
-    $('sContent').textContent = obj.data.content || '';
-    $('openId').value = obj.data.shareId || '';
-    $('copyLink').onclick = () => {
-      const link = buildShareLink(obj.data.shareId);
-      navigator.clipboard.writeText(link).then(()=> {
-        setStatus('Link copied to clipboard');
-      }, ()=> setStatus('Copy failed', true));
-    };
-
-    $('deleteBtn').onclick = async () => {
-      // Only allow deletion if ownerToken in doc matches localStorage
-      const localToken = localStorage.getItem(OWNER_TOKEN_KEY);
-      if (!localToken) { setStatus('You are not the owner (no token in this browser)', true); return; }
-      if (obj.data.ownerToken !== localToken) {
-        setStatus('Owner token mismatch. Delete not allowed from this browser.', true);
-        return;
-      }
-      if (!confirm('Delete this snippet? This cannot be undone.')) return;
-      try {
-        await db.collection('snippets').doc(obj.docId).delete();
-        setStatus('Deleted');
-        showSnippet(null);
-        loadRecent();
-      } catch (e) {
-        setStatus('Delete failed: ' + e.message, true);
-      }
-    };
-  }
-
-  // Utility: small HTML escape
-  function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-  // Wiring open button
-  $('openBtn').addEventListener('click', ()=> openByShareId());
-
-  // On page load: try to open id param and load recent
-  (function init(){
-    loadRecent();
-    const params = new URLSearchParams(location.search);
-    if (params.has('id')) {
-      openByShareId(params.get('id'));
-    }
-  })();
-
-  </script>
+        // Initialize the app
+        window.onload = () => {
+            // Check if user is already signed in
+            if (auth.currentUser) {
+                signInButton.style.display = 'none';
+                signOutButton.style.display = 'block';
+                userInfo.style.display = 'flex';
+            }
+        };
+    </script>
 </body>
 </html>
