@@ -167,6 +167,11 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
         }
         
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        
         .games-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -225,6 +230,7 @@
             display: flex;
             gap: 0.5rem;
             margin-top: 1rem;
+            flex-wrap: wrap;
         }
         
         .action-btn {
@@ -247,6 +253,14 @@
         
         .action-btn.active {
             color: var(--secondary);
+        }
+        
+        .action-btn.edit-btn {
+            color: var(--warning);
+        }
+        
+        .action-btn.delete-btn {
+            color: var(--error);
         }
         
         .loading {
@@ -290,6 +304,10 @@
         
         .notification.error {
             background: var(--error);
+        }
+        
+        .notification.warning {
+            background: var(--warning);
         }
         
         .modal {
@@ -360,6 +378,8 @@
             white-space: pre-wrap;
             max-height: 400px;
             overflow: auto;
+            color: #f8f9fa;
+            line-height: 1.5;
         }
         
         .close-btn {
@@ -449,6 +469,31 @@
         .tab-content.active {
             display: block;
         }
+        
+        .my-games-indicator {
+            background: var(--secondary);
+            color: white;
+            border-radius: 10px;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.7rem;
+            margin-left: 0.5rem;
+        }
+        
+        .game-owner {
+            font-size: 0.7rem;
+            color: var(--primary);
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .edit-form {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -461,6 +506,7 @@
         <div class="tabs">
             <button class="tab active" data-tab="upload">Upload Game</button>
             <button class="tab" data-tab="games">Browse Games</button>
+            <button class="tab" data-tab="my-games">My Games <span class="my-games-indicator" id="myGamesCount">0</span></button>
         </div>
         
         <div class="tab-content active" id="upload-tab">
@@ -514,6 +560,12 @@
                 <div class="loading">Loading games...</div>
             </div>
         </div>
+        
+        <div class="tab-content" id="my-games-tab">
+            <div id="myGamesContainer" class="games-container">
+                <div class="loading">Loading your games...</div>
+            </div>
+        </div>
     </div>
     
     <button class="floating-btn" id="scrollToTopBtn">↑</button>
@@ -537,6 +589,59 @@
         </div>
     </div>
     
+    <!-- Edit Game Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Game</h3>
+                <button class="close-btn" id="closeEditModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editGameForm">
+                    <input type="hidden" id="editGameId">
+                    <div class="form-group">
+                        <label for="editGameTitle">Game Title</label>
+                        <input 
+                            type="text" 
+                            id="editGameTitle" 
+                            placeholder="Enter a catchy title for your game"
+                            maxlength="50"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editGameDescription">Game Description</label>
+                        <textarea 
+                            id="editGameDescription" 
+                            placeholder="Describe your game, controls, and how to play..."
+                            maxlength="300"
+                        ></textarea>
+                        <div class="char-count">
+                            <span id="editDescCharCount">0</span>/300
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editGameCode">HTML Game Code</label>
+                        <textarea 
+                            id="editGameCode" 
+                            placeholder="Paste your complete HTML game code here..."
+                            required
+                        ></textarea>
+                        <div class="char-count">
+                            <span id="editCodeCharCount">0</span> characters
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+                <button class="btn" id="updateGameBtn">Update Game</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Firebase configuration
         const firebaseConfig = {
@@ -562,6 +667,8 @@
         const codeCharCount = document.getElementById('codeCharCount');
         const submitBtn = document.getElementById('submitBtn');
         const gamesContainer = document.getElementById('gamesContainer');
+        const myGamesContainer = document.getElementById('myGamesContainer');
+        const myGamesCount = document.getElementById('myGamesCount');
         const notification = document.getElementById('notification');
         const scrollToTopBtn = document.getElementById('scrollToTopBtn');
         const codeModal = document.getElementById('codeModal');
@@ -570,8 +677,26 @@
         const copyCodeBtn = document.getElementById('copyCodeBtn');
         const closeModal = document.getElementById('closeModal');
         const closeModalBtn = document.getElementById('closeModalBtn');
+        const editModal = document.getElementById('editModal');
+        const editGameForm = document.getElementById('editGameForm');
+        const editGameId = document.getElementById('editGameId');
+        const editGameTitle = document.getElementById('editGameTitle');
+        const editGameDescription = document.getElementById('editGameDescription');
+        const editGameCode = document.getElementById('editGameCode');
+        const editDescCharCount = document.getElementById('editDescCharCount');
+        const editCodeCharCount = document.getElementById('editCodeCharCount');
+        const closeEditModal = document.getElementById('closeEditModal');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const updateGameBtn = document.getElementById('updateGameBtn');
         const tabs = document.querySelectorAll('.tab');
         const tabContents = document.querySelectorAll('.tab-content');
+
+        // Get or create user ID
+        let userId = localStorage.getItem('anonymousUserId');
+        if (!userId) {
+            userId = 'user_' + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem('anonymousUserId', userId);
+        }
 
         // Character count updates
         gameDescription.addEventListener('input', () => {
@@ -580,6 +705,14 @@
         
         gameCode.addEventListener('input', () => {
             codeCharCount.textContent = gameCode.value.length;
+        });
+        
+        editGameDescription.addEventListener('input', () => {
+            editDescCharCount.textContent = editGameDescription.value.length;
+        });
+        
+        editGameCode.addEventListener('input', () => {
+            editCodeCharCount.textContent = editGameCode.value.length;
         });
 
         // Tab functionality
@@ -598,6 +731,11 @@
                         content.classList.add('active');
                     }
                 });
+                
+                // Refresh my games if needed
+                if (tabId === 'my-games') {
+                    loadMyGames();
+                }
             });
         });
 
@@ -615,9 +753,6 @@
             submitBtn.innerHTML = '<span>Uploading...</span>';
             
             try {
-                // Generate a random anonymous identifier for the user
-                const anonymousId = 'user_' + Math.random().toString(36).substring(2, 9);
-                
                 await db.collection('games').add({
                     title: title,
                     description: description,
@@ -625,8 +760,8 @@
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     likes: 0,
                     plays: 0,
-                    anonymousId: anonymousId,
-                    userLikes: [] // Track which anonymous users liked which games
+                    userId: userId,
+                    userLikes: []
                 });
                 
                 // Show success notification
@@ -637,8 +772,8 @@
                 descCharCount.textContent = '0';
                 codeCharCount.textContent = '0';
                 
-                // Switch to games tab
-                document.querySelector('[data-tab="games"]').click();
+                // Switch to my games tab
+                document.querySelector('[data-tab="my-games"]').click();
             } catch (error) {
                 console.error('Error adding game: ', error);
                 showNotification('Failed to upload game. Please try again.', 'error');
@@ -648,7 +783,7 @@
             }
         });
 
-        // Load games
+        // Load all games
         function loadGames() {
             gamesContainer.innerHTML = '<div class="loading">Loading games...</div>';
             
@@ -671,17 +806,15 @@
                     }
                     
                     gamesContainer.innerHTML = '';
+                    let myGamesCounter = 0;
                     
                     snapshot.forEach(doc => {
                         const game = doc.data();
                         const gameId = doc.id;
                         
-                        // Generate a unique identifier for this user session
-                        let userId = localStorage.getItem('anonymousUserId');
-                        if (!userId) {
-                            userId = 'user_' + Math.random().toString(36).substring(2, 9);
-                            localStorage.setItem('anonymousUserId', userId);
-                        }
+                        // Check if current user owns this game
+                        const isOwner = game.userId === userId;
+                        if (isOwner) myGamesCounter++;
                         
                         // Check if current user has liked this game
                         const userLikes = game.userLikes || [];
@@ -698,6 +831,7 @@
                             </div>
                             <div class="game-title">${escapeHtml(game.title)}</div>
                             <div class="game-description">${escapeHtml(game.description || 'No description provided.')}</div>
+                            ${isOwner ? '<div class="game-owner"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> Your Game</div>' : ''}
                             <div class="game-actions">
                                 <button class="action-btn play-btn" data-id="${gameId}">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -705,7 +839,7 @@
                                     </svg>
                                     <span>Play</span>
                                 </button>
-                                <button class="action-btn ${isLiked ? 'active' : ''}" data-id="${gameId}">
+                                <button class="action-btn like-btn ${isLiked ? 'active' : ''}" data-id="${gameId}">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
                                         <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
                                     </svg>
@@ -718,6 +852,22 @@
                                     </svg>
                                     <span>Code</span>
                                 </button>
+                                ${isOwner ? `
+                                    <button class="action-btn edit-btn" data-id="${gameId}" data-title="${escapeHtml(game.title)}" data-description="${escapeHtml(game.description || '')}" data-code="${escapeHtml(game.code)}">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg>
+                                        <span>Edit</span>
+                                    </button>
+                                    <button class="action-btn delete-btn" data-id="${gameId}">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                        </svg>
+                                        <span>Delete</span>
+                                    </button>
+                                ` : ''}
                             </div>
                             <div class="game-meta">
                                 <span>${formatTime(game.timestamp?.toDate())}</span>
@@ -728,20 +878,136 @@
                         gamesContainer.appendChild(gameElement);
                     });
                     
+                    // Update my games count
+                    myGamesCount.textContent = myGamesCounter;
+                    
                     // Add event listeners to action buttons
-                    document.querySelectorAll('.action-btn').forEach(btn => {
-                        if (btn.classList.contains('play-btn')) {
-                            btn.addEventListener('click', handlePlay);
-                        } else if (btn.classList.contains('code-btn')) {
-                            btn.addEventListener('click', handleShowCode);
-                        } else {
-                            btn.addEventListener('click', handleLike);
-                        }
-                    });
+                    addGameEventListeners();
                 }, error => {
                     console.error('Error loading games: ', error);
                     gamesContainer.innerHTML = '<div class="empty-state">Failed to load games. Please refresh the page.</div>';
                 });
+        }
+
+        // Load user's games
+        function loadMyGames() {
+            myGamesContainer.innerHTML = '<div class="loading">Loading your games...</div>';
+            
+            db.collection('games')
+                .where('userId', '==', userId)
+                .orderBy('timestamp', 'desc')
+                .onSnapshot(snapshot => {
+                    if (snapshot.empty) {
+                        myGamesContainer.innerHTML = `
+                            <div class="empty-state">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M8 12H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M12 16V8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                                <h3>You haven't uploaded any games yet</h3>
+                                <p>Go to the Upload tab to share your first game!</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    myGamesContainer.innerHTML = '';
+                    
+                    snapshot.forEach(doc => {
+                        const game = doc.data();
+                        const gameId = doc.id;
+                        
+                        // Create a data URL for the game iframe
+                        const gameDataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(game.code)}`;
+                        
+                        const gameElement = document.createElement('div');
+                        gameElement.className = 'card game-card';
+                        gameElement.innerHTML = `
+                            <div class="game-preview">
+                                <iframe src="${gameDataUrl}" title="${escapeHtml(game.title)}"></iframe>
+                            </div>
+                            <div class="game-title">${escapeHtml(game.title)}</div>
+                            <div class="game-description">${escapeHtml(game.description || 'No description provided.')}</div>
+                            <div class="game-owner"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg> Your Game</div>
+                            <div class="game-actions">
+                                <button class="action-btn play-btn" data-id="${gameId}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M8 5v14l11-7z"/>
+                                    </svg>
+                                    <span>Play</span>
+                                </button>
+                                <button class="action-btn like-btn" data-id="${gameId}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                                    </svg>
+                                    <span>${game.likes || 0}</span>
+                                </button>
+                                <button class="action-btn code-btn" data-id="${gameId}" data-code="${escapeHtml(game.code)}" data-title="${escapeHtml(game.title)}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="16 18 22 12 16 6"></polyline>
+                                        <polyline points="8 6 2 12 8 18"></polyline>
+                                    </svg>
+                                    <span>Code</span>
+                                </button>
+                                <button class="action-btn edit-btn" data-id="${gameId}" data-title="${escapeHtml(game.title)}" data-description="${escapeHtml(game.description || '')}" data-code="${escapeHtml(game.code)}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                    </svg>
+                                    <span>Edit</span>
+                                </button>
+                                <button class="action-btn delete-btn" data-id="${gameId}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                    <span>Delete</span>
+                                </button>
+                            </div>
+                            <div class="game-meta">
+                                <span>${formatTime(game.timestamp?.toDate())}</span>
+                                <span>${game.plays || 0} plays</span>
+                            </div>
+                        `;
+                        
+                        myGamesContainer.appendChild(gameElement);
+                    });
+                    
+                    // Add event listeners to action buttons
+                    addGameEventListeners();
+                }, error => {
+                    console.error('Error loading my games: ', error);
+                    myGamesContainer.innerHTML = '<div class="empty-state">Failed to load your games. Please refresh the page.</div>';
+                });
+        }
+
+        // Add event listeners to game action buttons
+        function addGameEventListeners() {
+            // Play buttons
+            document.querySelectorAll('.play-btn').forEach(btn => {
+                btn.addEventListener('click', handlePlay);
+            });
+            
+            // Like buttons
+            document.querySelectorAll('.like-btn').forEach(btn => {
+                btn.addEventListener('click', handleLike);
+            });
+            
+            // Code buttons
+            document.querySelectorAll('.code-btn').forEach(btn => {
+                btn.addEventListener('click', handleShowCode);
+            });
+            
+            // Edit buttons
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', handleEdit);
+            });
+            
+            // Delete buttons
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', handleDelete);
+            });
         }
 
         // Handle play functionality
@@ -775,13 +1041,6 @@
             const gameId = e.currentTarget.getAttribute('data-id');
             const likeCountElement = e.currentTarget.querySelector('span');
             const svgElement = e.currentTarget.querySelector('svg');
-            
-            // Get current user ID
-            let userId = localStorage.getItem('anonymousUserId');
-            if (!userId) {
-                userId = 'user_' + Math.random().toString(36).substring(2, 9);
-                localStorage.setItem('anonymousUserId', userId);
-            }
             
             try {
                 const gameRef = db.collection('games').doc(gameId);
@@ -832,9 +1091,74 @@
             const title = e.currentTarget.getAttribute('data-title');
             
             modalTitle.textContent = `Code for: ${title}`;
-            modalCode.textContent = code;
+            modalCode.textContent = decodeHtml(code);
             codeModal.classList.add('show');
         }
+
+        // Handle edit functionality
+        function handleEdit(e) {
+            const gameId = e.currentTarget.getAttribute('data-id');
+            const title = e.currentTarget.getAttribute('data-title');
+            const description = e.currentTarget.getAttribute('data-description');
+            const code = e.currentTarget.getAttribute('data-code');
+            
+            editGameId.value = gameId;
+            editGameTitle.value = decodeHtml(title);
+            editGameDescription.value = decodeHtml(description);
+            editGameCode.value = decodeHtml(code);
+            editDescCharCount.textContent = editGameDescription.value.length;
+            editCodeCharCount.textContent = editGameCode.value.length;
+            
+            editModal.classList.add('show');
+        }
+
+        // Handle delete functionality
+        async function handleDelete(e) {
+            const gameId = e.currentTarget.getAttribute('data-id');
+            
+            if (confirm('Are you sure you want to delete this game? This action cannot be undone.')) {
+                try {
+                    await db.collection('games').doc(gameId).delete();
+                    showNotification('Game deleted successfully!', 'success');
+                } catch (error) {
+                    console.error('Error deleting game: ', error);
+                    showNotification('Failed to delete game. Please try again.', 'error');
+                }
+            }
+        }
+
+        // Update game
+        updateGameBtn.addEventListener('click', async () => {
+            const gameId = editGameId.value;
+            const title = editGameTitle.value.trim();
+            const description = editGameDescription.value.trim();
+            const code = editGameCode.value.trim();
+            
+            if (!title || !code) {
+                showNotification('Please fill in all required fields.', 'warning');
+                return;
+            }
+            
+            updateGameBtn.disabled = true;
+            updateGameBtn.innerHTML = '<span>Updating...</span>';
+            
+            try {
+                await db.collection('games').doc(gameId).update({
+                    title: title,
+                    description: description,
+                    code: code
+                });
+                
+                showNotification('Game updated successfully!', 'success');
+                editModal.classList.remove('show');
+            } catch (error) {
+                console.error('Error updating game: ', error);
+                showNotification('Failed to update game. Please try again.', 'error');
+            } finally {
+                updateGameBtn.disabled = false;
+                updateGameBtn.innerHTML = '<span>Update Game</span>';
+            }
+        });
 
         // Copy code functionality
         copyCodeBtn.addEventListener('click', () => {
@@ -847,13 +1171,21 @@
             });
         });
 
-        // Close modal
+        // Close modals
         closeModal.addEventListener('click', () => {
             codeModal.classList.remove('show');
         });
         
         closeModalBtn.addEventListener('click', () => {
             codeModal.classList.remove('show');
+        });
+        
+        closeEditModal.addEventListener('click', () => {
+            editModal.classList.remove('show');
+        });
+        
+        cancelEditBtn.addEventListener('click', () => {
+            editModal.classList.remove('show');
         });
 
         // Utility functions
@@ -879,6 +1211,12 @@
             div.textContent = text;
             return div.innerHTML;
         }
+        
+        function decodeHtml(html) {
+            const txt = document.createElement('textarea');
+            txt.innerHTML = html;
+            return txt.value;
+        }
 
         function showNotification(message, type = 'success') {
             notification.textContent = message;
@@ -886,6 +1224,8 @@
             
             if (type === 'error') {
                 notification.classList.add('error');
+            } else if (type === 'warning') {
+                notification.classList.add('warning');
             }
             
             notification.classList.add('show');
