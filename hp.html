@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Share Snippets — Neocities + Firebase</title>
+
+  <style>
+    :root{
+      --bg:#f7f7fb; --card:#ffffff; --muted:#666; --accent:#2563eb;
+      --radius:12px; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    body{margin:0;background:var(--bg);color:#111;display:flex;min-height:100vh;align-items:flex-start;justify-content:center;padding:28px;}
+    .wrap{width:100%;max-width:920px;}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px;}
+    h1{margin:0;font-size:20px;}
+    .card{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:0 6px 18px rgba(20,20,40,.06);}
+    form{display:grid;gap:10px;}
+    input[type="text"], textarea{
+      width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ef;font-size:14px;box-sizing:border-box;
+      background:transparent;resize:vertical;
+    }
+    textarea{min-height:160px;}
+    .controls{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:6px;}
+    .btn{background:var(--accent);color:#fff;padding:8px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:600;}
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(37,99,235,.12);}
+    .muted{color:var(--muted);font-size:13px;}
+    .list{margin-top:18px;display:grid;gap:12px;}
+    .item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border-radius:10px;border:1px solid #f0f2f6;background:#fff;}
+    .meta{display:flex;flex-direction:column;}
+    .title{font-weight:700;}
+    .small{font-size:12px;color:var(--muted);}
+    .right{display:flex;gap:8px;align-items:center;}
+    .share-btn{background:transparent;border:1px solid #e6e9ef;padding:6px 8px;border-radius:8px;cursor:pointer;}
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px;}
+    @media (max-width:560px){ .wrap{padding-bottom:120px;} header{flex-direction:column;align-items:flex-start;gap:6px;} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Snippet Share</h1>
+        <div class="muted">Save short text snippets and share links. Built for Neocities + Firebase.</div>
+      </div>
+      <div style="margin-left:auto" class="muted">Firebase: poplol-7209f</div>
+    </header>
+
+    <section class="card" id="editorCard">
+      <form id="snippetForm">
+        <input id="title" type="text" placeholder="Title (optional)" maxlength="120" />
+        <textarea id="content" placeholder="Write or paste your text here..." required></textarea>
+        <div class="controls">
+          <div class="muted" id="status">Ready</div>
+          <div>
+            <button type="button" class="btn ghost" id="clearBtn">Clear</button>
+            <button type="submit" class="btn">Save & Share</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <section class="card" style="margin-top:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <strong>Recent snippets</strong>
+        <div class="muted">Auto-updates</div>
+      </div>
+      <div id="list" class="list" aria-live="polite"></div>
+    </section>
+
+    <footer>
+      Tip: click an item to open its permalink. Make sure your Firestore rules allow reads/writes for sharing.
+    </footer>
+  </div>
+
+  <!-- Firebase compat SDK (works on static hosts) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Your config (from the message)
+    const firebaseConfig = {
+      apiKey: "AIzaSyD0T-mS__FlN3QASJnmD0K6S5VNDiN2bxQ",
+      authDomain: "poplol-7209f.firebaseapp.com",
+      projectId: "poplol-7209f",
+      storageBucket: "poplol-7209f.firebasestorage.app",
+      messagingSenderId: "1058108342269",
+      appId: "1:1058108342269:web:577700a7503b3db8316394",
+      measurementId: "G-EXR6CPBH5R"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // DOM
+    const form = document.getElementById('snippetForm');
+    const titleEl = document.getElementById('title');
+    const contentEl = document.getElementById('content');
+    const status = document.getElementById('status');
+    const listEl = document.getElementById('list');
+    const clearBtn = document.getElementById('clearBtn');
+
+    // Helpers
+    function setStatus(text, isError=false){
+      status.textContent = text;
+      status.style.color = isError ? '#b91c1c' : '';
+    }
+
+    async function createSnippet(title, content){
+      setStatus('Saving...');
+      try {
+        const docRef = await db.collection('snippets').add({
+          title: title || '',
+          content: content || '',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        setStatus('Saved — link copied to clipboard');
+        const url = location.origin + location.pathname + '#' + docRef.id;
+        await navigator.clipboard.writeText(url).catch(()=>{});
+        return docRef.id;
+      } catch (err) {
+        console.error(err);
+        setStatus('Save failed. Check Firestore rules and console.', true);
+        throw err;
+      }
+    }
+
+    // Load snippet by id from hash
+    async function loadFromHash(){
+      const id = location.hash.replace('#','').trim();
+      if(!id) return;
+      setStatus('Loading snippet...');
+      try {
+        const doc = await db.collection('snippets').doc(id).get();
+        if(!doc.exists){
+          setStatus('Snippet not found', true);
+          return;
+        }
+        const data = doc.data();
+        titleEl.value = data.title || '';
+        contentEl.value = data.content || '';
+        setStatus('Loaded snippet from link');
+        // Scroll into view
+        window.scrollTo({top:0, behavior:'smooth'});
+      } catch (err){
+        console.error(err);
+        setStatus('Failed to load snippet', true);
+      }
+    }
+
+    // Render list item
+    function renderItem(doc){
+      const data = doc.data();
+      const id = doc.id;
+      const createdAt = (data.createdAt && data.createdAt.toDate) ? data.createdAt.toDate().toLocaleString() : '';
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.innerHTML = `
+        <div class="meta" style="min-width:0">
+          <div class="title">${escapeHtml(data.title || (data.content || '').slice(0,50) || 'Untitled')}</div>
+          <div class="small">${escapeHtml((data.content || '').slice(0,120))}</div>
+        </div>
+        <div class="right">
+          <div class="small">${createdAt}</div>
+          <button class="share-btn" data-id="${id}" title="Copy link">Share</button>
+        </div>
+      `;
+      // click opens permalink
+      item.addEventListener('click', (e)=>{
+        if(e.target && e.target.tagName === 'BUTTON') return; // share handled separately
+        location.hash = id;
+      });
+      // share button
+      item.querySelector('.share-btn').addEventListener('click', async (e)=>{
+        e.stopPropagation();
+        const url = location.origin + location.pathname + '#' + id;
+        try {
+          await navigator.clipboard.writeText(url);
+          setStatus('Link copied to clipboard');
+        } catch {
+          prompt('Copy this link:', url);
+        }
+      });
+      return item;
+    }
+
+    // Escape simple HTML to avoid injection in listing
+    function escapeHtml(s){
+      if(!s) return '';
+      return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    // Real-time listener for last 30 snippets
+    db.collection('snippets').orderBy('createdAt','desc').limit(30)
+      .onSnapshot(snapshot=>{
+        listEl.innerHTML = '';
+        snapshot.forEach(doc => {
+          const item = renderItem(doc);
+          listEl.appendChild(item);
+        });
+      }, err=>{
+        console.error(err);
+        setStatus('Could not load recent snippets. Check Firestore rules or network.', true);
+      });
+
+    // Form submit
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const title = titleEl.value.trim();
+      const content = contentEl.value.trim();
+      if(!content){
+        setStatus('Content is required', true);
+        return;
+      }
+      try {
+        const id = await createSnippet(title, content);
+        location.hash = id;
+        // keep form filled, but optional: clear contentEl.value = '';
+      } catch (err){
+        // error already shown in createSnippet
+      }
+    });
+
+    clearBtn.addEventListener('click', ()=>{
+      titleEl.value = '';
+      contentEl.value = '';
+      setStatus('Cleared');
+    });
+
+    // Load snippet if URL has hash
+    window.addEventListener('hashchange', loadFromHash, false);
+    window.addEventListener('load', ()=>{
+      // try load snippet from hash on first load
+      if(location.hash) loadFromHash();
+    });
+
+  </script>
+</body>
+</html>
