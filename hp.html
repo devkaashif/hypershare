@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SparkBoard - Share Your Thoughts Anonymously</title>
+    <title>GameSpark - Share & Play HTML Games</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --primary: #6c63ff;
             --secondary: #ff6584;
-            --dark: #2a2a3c;
+            --dark: #1a1a2e;
+            --darker: #16213e;
             --light: #f8f9fa;
             --success: #4caf50;
             --warning: #ff9800;
@@ -25,7 +26,7 @@
         }
         
         body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
             color: var(--light);
             min-height: 100vh;
             padding-bottom: 2rem;
@@ -79,25 +80,41 @@
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
         }
         
-        .post-form {
+        .game-form {
             display: flex;
             flex-direction: column;
             gap: 1rem;
         }
         
-        textarea {
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        input, textarea {
             background: rgba(255, 255, 255, 0.07);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             padding: 1rem;
             color: var(--light);
             font-size: 1rem;
-            resize: vertical;
-            min-height: 120px;
             transition: all 0.3s ease;
         }
         
-        textarea:focus {
+        textarea {
+            resize: vertical;
+            min-height: 200px;
+            font-family: monospace;
+        }
+        
+        input:focus, textarea:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.2);
@@ -141,24 +158,60 @@
             box-shadow: none;
         }
         
-        .posts-container {
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .games-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 1.5rem;
             margin-top: 2rem;
         }
         
-        .post {
+        .game-card {
             position: relative;
             overflow: hidden;
         }
         
-        .post-content {
-            line-height: 1.6;
+        .game-preview {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-bottom: 1rem;
+            overflow: hidden;
+            position: relative;
         }
         
-        .post-meta {
+        .game-preview iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+        
+        .game-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .game-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        
+        .game-meta {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -168,7 +221,13 @@
             padding-top: 0.8rem;
         }
         
-        .reaction-btn {
+        .game-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .action-btn {
             background: transparent;
             border: none;
             color: var(--light);
@@ -176,16 +235,17 @@
             display: flex;
             align-items: center;
             gap: 0.3rem;
-            padding: 0.3rem 0.6rem;
+            padding: 0.5rem 0.8rem;
             border-radius: 20px;
             transition: all 0.2s ease;
+            font-size: 0.8rem;
         }
         
-        .reaction-btn:hover {
+        .action-btn:hover {
             background: rgba(255, 255, 255, 0.1);
         }
         
-        .reaction-btn.active {
+        .action-btn.active {
             color: var(--secondary);
         }
         
@@ -232,13 +292,106 @@
             background: var(--error);
         }
         
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background: var(--darker);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+            overflow: auto;
+            flex: 1;
+        }
+        
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow: auto;
+        }
+        
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: var(--light);
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
         @media (max-width: 768px) {
-            .posts-container {
+            .games-container {
                 grid-template-columns: 1fr;
             }
             
             h1 {
                 font-size: 2rem;
+            }
+            
+            .game-actions {
+                flex-wrap: wrap;
             }
         }
         
@@ -265,40 +418,124 @@
         .floating-btn:hover {
             transform: scale(1.1);
         }
+        
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab {
+            padding: 0.8rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--light);
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .tab.active {
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>SparkBoard</h1>
-        <p class="tagline">Share your thoughts anonymously • No sign-up needed</p>
+        <h1>GameSpark</h1>
+        <p class="tagline">Upload, Play & Share HTML Games • No Sign-Up Needed</p>
     </header>
     
     <div class="container">
-        <div class="card">
-            <h2>Share Your Spark</h2>
-            <form class="post-form" id="postForm">
-                <textarea 
-                    id="postContent" 
-                    placeholder="What's on your mind? Share your thoughts, ideas, or questions..."
-                    maxlength="500"
-                ></textarea>
-                <div class="char-count">
-                    <span id="charCount">0</span>/500
-                </div>
-                <button type="submit" class="btn" id="submitBtn">
-                    <span>Post Your Spark</span>
-                </button>
-            </form>
+        <div class="tabs">
+            <button class="tab active" data-tab="upload">Upload Game</button>
+            <button class="tab" data-tab="games">Browse Games</button>
         </div>
         
-        <div id="postsContainer" class="posts-container">
-            <div class="loading">Loading sparks...</div>
+        <div class="tab-content active" id="upload-tab">
+            <div class="card">
+                <h2>Upload Your HTML Game</h2>
+                <form class="game-form" id="gameForm">
+                    <div class="form-group">
+                        <label for="gameTitle">Game Title</label>
+                        <input 
+                            type="text" 
+                            id="gameTitle" 
+                            placeholder="Enter a catchy title for your game"
+                            maxlength="50"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gameDescription">Game Description</label>
+                        <textarea 
+                            id="gameDescription" 
+                            placeholder="Describe your game, controls, and how to play..."
+                            maxlength="300"
+                        ></textarea>
+                        <div class="char-count">
+                            <span id="descCharCount">0</span>/300
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="gameCode">HTML Game Code</label>
+                        <textarea 
+                            id="gameCode" 
+                            placeholder="Paste your complete HTML game code here..."
+                            required
+                        ></textarea>
+                        <div class="char-count">
+                            <span id="codeCharCount">0</span> characters
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn" id="submitBtn">
+                        <span>Upload Game</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="games-tab">
+            <div id="gamesContainer" class="games-container">
+                <div class="loading">Loading games...</div>
+            </div>
         </div>
     </div>
     
     <button class="floating-btn" id="scrollToTopBtn">↑</button>
     
-    <div class="notification" id="notification">Post submitted successfully!</div>
+    <div class="notification" id="notification">Game uploaded successfully!</div>
+    
+    <!-- Game Code Modal -->
+    <div class="modal" id="codeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Game Code</h3>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <pre class="code-block" id="modalCode"></pre>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="copyCodeBtn">Copy Code</button>
+                <button class="btn" id="closeModalBtn">Close</button>
+            </div>
+        </div>
+    </div>
     
     <script>
         // Firebase configuration
@@ -317,83 +554,127 @@
         const db = firebase.firestore();
 
         // DOM Elements
-        const postForm = document.getElementById('postForm');
-        const postContent = document.getElementById('postContent');
-        const charCount = document.getElementById('charCount');
+        const gameForm = document.getElementById('gameForm');
+        const gameTitle = document.getElementById('gameTitle');
+        const gameDescription = document.getElementById('gameDescription');
+        const gameCode = document.getElementById('gameCode');
+        const descCharCount = document.getElementById('descCharCount');
+        const codeCharCount = document.getElementById('codeCharCount');
         const submitBtn = document.getElementById('submitBtn');
-        const postsContainer = document.getElementById('postsContainer');
+        const gamesContainer = document.getElementById('gamesContainer');
         const notification = document.getElementById('notification');
         const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+        const codeModal = document.getElementById('codeModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalCode = document.getElementById('modalCode');
+        const copyCodeBtn = document.getElementById('copyCodeBtn');
+        const closeModal = document.getElementById('closeModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
 
-        // Character count update
-        postContent.addEventListener('input', () => {
-            charCount.textContent = postContent.value.length;
+        // Character count updates
+        gameDescription.addEventListener('input', () => {
+            descCharCount.textContent = gameDescription.value.length;
+        });
+        
+        gameCode.addEventListener('input', () => {
+            codeCharCount.textContent = gameCode.value.length;
         });
 
-        // Submit post
-        postForm.addEventListener('submit', async (e) => {
+        // Tab functionality
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Show active tab content
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === `${tabId}-tab`) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // Submit game
+        gameForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const content = postContent.value.trim();
-            if (!content) return;
+            const title = gameTitle.value.trim();
+            const description = gameDescription.value.trim();
+            const code = gameCode.value.trim();
+            
+            if (!title || !code) return;
             
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span>Posting...</span>';
+            submitBtn.innerHTML = '<span>Uploading...</span>';
             
             try {
                 // Generate a random anonymous identifier for the user
                 const anonymousId = 'user_' + Math.random().toString(36).substring(2, 9);
                 
-                await db.collection('posts').add({
-                    content: content,
+                await db.collection('games').add({
+                    title: title,
+                    description: description,
+                    code: code,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     likes: 0,
+                    plays: 0,
                     anonymousId: anonymousId,
-                    userLikes: [] // Track which anonymous users liked which posts
+                    userLikes: [] // Track which anonymous users liked which games
                 });
                 
                 // Show success notification
-                showNotification('Your spark has been shared!', 'success');
+                showNotification('Game uploaded successfully!', 'success');
                 
                 // Reset form
-                postForm.reset();
-                charCount.textContent = '0';
+                gameForm.reset();
+                descCharCount.textContent = '0';
+                codeCharCount.textContent = '0';
+                
+                // Switch to games tab
+                document.querySelector('[data-tab="games"]').click();
             } catch (error) {
-                console.error('Error adding post: ', error);
-                showNotification('Failed to post. Please try again.', 'error');
+                console.error('Error adding game: ', error);
+                showNotification('Failed to upload game. Please try again.', 'error');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<span>Post Your Spark</span>';
+                submitBtn.innerHTML = '<span>Upload Game</span>';
             }
         });
 
-        // Load posts
-        function loadPosts() {
-            postsContainer.innerHTML = '<div class="loading">Loading sparks...</div>';
+        // Load games
+        function loadGames() {
+            gamesContainer.innerHTML = '<div class="loading">Loading games...</div>';
             
-            db.collection('posts')
+            db.collection('games')
                 .orderBy('timestamp', 'desc')
                 .onSnapshot(snapshot => {
                     if (snapshot.empty) {
-                        postsContainer.innerHTML = `
+                        gamesContainer.innerHTML = `
                             <div class="empty-state">
                                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2"/>
                                     <path d="M8 12H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                                     <path d="M12 16V8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                                 </svg>
-                                <h3>No sparks yet</h3>
-                                <p>Be the first to share your thoughts!</p>
+                                <h3>No games yet</h3>
+                                <p>Be the first to upload a game!</p>
                             </div>
                         `;
                         return;
                     }
                     
-                    postsContainer.innerHTML = '';
+                    gamesContainer.innerHTML = '';
                     
                     snapshot.forEach(doc => {
-                        const post = doc.data();
-                        const postId = doc.id;
+                        const game = doc.data();
+                        const gameId = doc.id;
                         
                         // Generate a unique identifier for this user session
                         let userId = localStorage.getItem('anonymousUserId');
@@ -402,41 +683,96 @@
                             localStorage.setItem('anonymousUserId', userId);
                         }
                         
-                        // Check if current user has liked this post
-                        const userLikes = post.userLikes || [];
+                        // Check if current user has liked this game
+                        const userLikes = game.userLikes || [];
                         const isLiked = userLikes.includes(userId);
                         
-                        const postElement = document.createElement('div');
-                        postElement.className = 'card post';
-                        postElement.innerHTML = `
-                            <div class="post-content">${escapeHtml(post.content)}</div>
-                            <div class="post-meta">
-                                <span>${formatTime(post.timestamp?.toDate())}</span>
-                                <button class="reaction-btn ${isLiked ? 'active' : ''}" data-id="${postId}">
-                                    <span>${post.likes || 0}</span>
+                        // Create a data URL for the game iframe
+                        const gameDataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(game.code)}`;
+                        
+                        const gameElement = document.createElement('div');
+                        gameElement.className = 'card game-card';
+                        gameElement.innerHTML = `
+                            <div class="game-preview">
+                                <iframe src="${gameDataUrl}" title="${escapeHtml(game.title)}"></iframe>
+                            </div>
+                            <div class="game-title">${escapeHtml(game.title)}</div>
+                            <div class="game-description">${escapeHtml(game.description || 'No description provided.')}</div>
+                            <div class="game-actions">
+                                <button class="action-btn play-btn" data-id="${gameId}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M8 5v14l11-7z"/>
+                                    </svg>
+                                    <span>Play</span>
+                                </button>
+                                <button class="action-btn ${isLiked ? 'active' : ''}" data-id="${gameId}">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
                                         <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
                                     </svg>
+                                    <span>${game.likes || 0}</span>
                                 </button>
+                                <button class="action-btn code-btn" data-id="${gameId}" data-code="${escapeHtml(game.code)}" data-title="${escapeHtml(game.title)}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="16 18 22 12 16 6"></polyline>
+                                        <polyline points="8 6 2 12 8 18"></polyline>
+                                    </svg>
+                                    <span>Code</span>
+                                </button>
+                            </div>
+                            <div class="game-meta">
+                                <span>${formatTime(game.timestamp?.toDate())}</span>
+                                <span>${game.plays || 0} plays</span>
                             </div>
                         `;
                         
-                        postsContainer.appendChild(postElement);
+                        gamesContainer.appendChild(gameElement);
                     });
                     
-                    // Add event listeners to like buttons
-                    document.querySelectorAll('.reaction-btn').forEach(btn => {
-                        btn.addEventListener('click', handleLike);
+                    // Add event listeners to action buttons
+                    document.querySelectorAll('.action-btn').forEach(btn => {
+                        if (btn.classList.contains('play-btn')) {
+                            btn.addEventListener('click', handlePlay);
+                        } else if (btn.classList.contains('code-btn')) {
+                            btn.addEventListener('click', handleShowCode);
+                        } else {
+                            btn.addEventListener('click', handleLike);
+                        }
                     });
                 }, error => {
-                    console.error('Error loading posts: ', error);
-                    postsContainer.innerHTML = '<div class="empty-state">Failed to load posts. Please refresh the page.</div>';
+                    console.error('Error loading games: ', error);
+                    gamesContainer.innerHTML = '<div class="empty-state">Failed to load games. Please refresh the page.</div>';
                 });
+        }
+
+        // Handle play functionality
+        async function handlePlay(e) {
+            const gameId = e.currentTarget.getAttribute('data-id');
+            
+            try {
+                // Increment play count
+                const gameRef = db.collection('games').doc(gameId);
+                const gameDoc = await gameRef.get();
+                
+                if (!gameDoc.exists) return;
+                
+                const game = gameDoc.data();
+                const currentPlays = game.plays || 0;
+                
+                await gameRef.update({
+                    plays: currentPlays + 1
+                });
+                
+                // Open game in new tab
+                const gameDataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(game.code)}`;
+                window.open(gameDataUrl, '_blank');
+            } catch (error) {
+                console.error('Error updating play count: ', error);
+            }
         }
 
         // Handle like functionality
         async function handleLike(e) {
-            const postId = e.currentTarget.getAttribute('data-id');
+            const gameId = e.currentTarget.getAttribute('data-id');
             const likeCountElement = e.currentTarget.querySelector('span');
             const svgElement = e.currentTarget.querySelector('svg');
             
@@ -448,22 +784,22 @@
             }
             
             try {
-                const postRef = db.collection('posts').doc(postId);
-                const postDoc = await postRef.get();
+                const gameRef = db.collection('games').doc(gameId);
+                const gameDoc = await gameRef.get();
                 
-                if (!postDoc.exists) return;
+                if (!gameDoc.exists) return;
                 
-                const post = postDoc.data();
-                const userLikes = post.userLikes || [];
-                const currentLikes = post.likes || 0;
+                const game = gameDoc.data();
+                const userLikes = game.userLikes || [];
+                const currentLikes = game.likes || 0;
                 
-                // Check if user already liked this post
+                // Check if user already liked this game
                 const userIndex = userLikes.indexOf(userId);
                 
                 if (userIndex > -1) {
                     // User already liked, so unlike
                     userLikes.splice(userIndex, 1);
-                    await postRef.update({
+                    await gameRef.update({
                         likes: currentLikes - 1,
                         userLikes: userLikes
                     });
@@ -473,7 +809,7 @@
                 } else {
                     // User hasn't liked, so add like
                     userLikes.push(userId);
-                    await postRef.update({
+                    await gameRef.update({
                         likes: currentLikes + 1,
                         userLikes: userLikes
                     });
@@ -486,9 +822,39 @@
                 likeCountElement.textContent = userIndex > -1 ? currentLikes - 1 : currentLikes + 1;
             } catch (error) {
                 console.error('Error updating like: ', error);
-                showNotification('Failed to update reaction. Please try again.', 'error');
+                showNotification('Failed to update like. Please try again.', 'error');
             }
         }
+
+        // Handle show code functionality
+        function handleShowCode(e) {
+            const code = e.currentTarget.getAttribute('data-code');
+            const title = e.currentTarget.getAttribute('data-title');
+            
+            modalTitle.textContent = `Code for: ${title}`;
+            modalCode.textContent = code;
+            codeModal.classList.add('show');
+        }
+
+        // Copy code functionality
+        copyCodeBtn.addEventListener('click', () => {
+            const code = modalCode.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification('Code copied to clipboard!', 'success');
+            }).catch(err => {
+                console.error('Failed to copy code: ', err);
+                showNotification('Failed to copy code.', 'error');
+            });
+        });
+
+        // Close modal
+        closeModal.addEventListener('click', () => {
+            codeModal.classList.remove('show');
+        });
+        
+        closeModalBtn.addEventListener('click', () => {
+            codeModal.classList.remove('show');
+        });
 
         // Utility functions
         function formatTime(date) {
@@ -548,7 +914,7 @@
 
         // Initialize the app
         document.addEventListener('DOMContentLoaded', () => {
-            loadPosts();
+            loadGames();
         });
     </script>
 </body>
