@@ -16,6 +16,7 @@
             --dark: #212529;
             --gray: #6c757d;
             --danger: #e63946;
+            --warning: #ff9e00;
         }
         
         * {
@@ -56,6 +57,13 @@
             font-size: 24px;
             font-weight: 700;
             color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logo-icon {
+            font-size: 28px;
         }
         
         .logo span {
@@ -76,6 +84,9 @@
             color: var(--dark);
             font-weight: 500;
             transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
         nav ul li a:hover {
@@ -94,6 +105,9 @@
             cursor: pointer;
             font-weight: 500;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
         .btn-primary {
@@ -134,8 +148,37 @@
             background-color: #c1121f;
         }
         
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e68a00;
+        }
+        
         main {
             padding: 40px 0;
+        }
+        
+        .welcome-section {
+            background: linear-gradient(135deg, var(--primary), var(--success));
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .welcome-section h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .welcome-section p {
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
         }
         
         .editor-container {
@@ -169,6 +212,9 @@
         
         .editor-title {
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .editor-content {
@@ -185,6 +231,9 @@
             font-family: 'Courier New', monospace;
             font-size: 14px;
             line-height: 1.5;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
         }
         
         .preview {
@@ -209,6 +258,14 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .action-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         
         .snippets-container {
@@ -236,6 +293,7 @@
             border-radius: 8px;
             padding: 15px;
             transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
         }
         
         .snippet-card:hover {
@@ -401,39 +459,182 @@
             font-size: 14px;
             color: #adb5bd;
         }
+        
+        .tutorial {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .tutorial h2 {
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .tutorial-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .tutorial-step {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        
+        .step-number {
+            background-color: var(--primary);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray);
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+        
+        .language-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .language-tab {
+            padding: 8px 16px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .language-tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .code-examples {
+            display: none;
+        }
+        
+        .code-examples.active {
+            display: block;
+        }
+        
+        .example-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .example-card {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .example-card:hover {
+            background-color: #e9ecef;
+            transform: translateY(-3px);
+        }
+        
+        .example-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+        
+        .example-description {
+            font-size: 14px;
+            color: var(--gray);
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="container">
             <div class="header-content">
-                <div class="logo">Code<span>Run</span></div>
+                <div class="logo">
+                    <span class="logo-icon">⚡</span>
+                    Code<span>Run</span>
+                </div>
                 <nav>
                     <ul>
-                        <li><a href="#" class="active">Editor</a></li>
-                        <li><a href="#">My Snippets</a></li>
-                        <li><a href="#">Explore</a></li>
+                        <li><a href="#" class="active">📝 Editor</a></li>
+                        <li><a href="#">📚 My Snippets</a></li>
+                        <li><a href="#">🔍 Explore</a></li>
                     </ul>
                 </nav>
-                <div class="auth-buttons" id="authButtons">
-                    <button class="btn btn-outline" id="loginBtn">Login</button>
-                    <button class="btn btn-primary" id="signupBtn">Sign Up</button>
-                </div>
-                <div class="user-info" id="userInfo" style="display: none;">
-                    <div class="user-avatar" id="userAvatar">U</div>
-                    <span id="userName">User</span>
-                    <button class="btn btn-outline" id="logoutBtn">Logout</button>
+                <div class="user-info" id="userInfo">
+                    <div class="user-avatar" id="userAvatar">G</div>
+                    <span id="userName">Guest</span>
                 </div>
             </div>
         </div>
     </header>
     
     <main class="container">
+        <div class="welcome-section">
+            <h1>Welcome to CodeRun!</h1>
+            <p>Write, run, and save HTML, CSS, and JavaScript code snippets without any sign-up required.</p>
+        </div>
+        
+        <div class="tutorial">
+            <h2>Getting Started</h2>
+            <div class="tutorial-steps">
+                <div class="tutorial-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Write Your Code</h3>
+                        <p>Use the code editors below to write HTML, CSS, and JavaScript.</p>
+                    </div>
+                </div>
+                <div class="tutorial-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Run Your Code</h3>
+                        <p>Click the "Run Code" button to see your code in action in the preview panel.</p>
+                    </div>
+                </div>
+                <div class="tutorial-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Save Your Work</h3>
+                        <p>Save your code snippets with a title and description for later use.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="editor-container">
             <div class="code-editor">
                 <div class="editor-header">
-                    <div class="editor-title">HTML</div>
-                    <button class="btn btn-success" id="runBtn">Run Code</button>
+                    <div class="editor-title">📄 HTML</div>
+                    <button class="btn btn-success" id="runBtn">▶️ Run Code</button>
                 </div>
                 <div class="editor-content">
                     <textarea id="htmlCode" placeholder="Enter your HTML code here...">&lt;!DOCTYPE html&gt;
@@ -451,7 +652,7 @@
             
             <div class="code-editor">
                 <div class="editor-header">
-                    <div class="editor-title">CSS</div>
+                    <div class="editor-title">🎨 CSS</div>
                 </div>
                 <div class="editor-content">
                     <textarea id="cssCode" placeholder="Enter your CSS code here...">body {
@@ -474,7 +675,7 @@ p {
             
             <div class="code-editor">
                 <div class="editor-header">
-                    <div class="editor-title">JavaScript</div>
+                    <div class="editor-title">⚙️ JavaScript</div>
                 </div>
                 <div class="editor-content">
                     <textarea id="jsCode" placeholder="Enter your JavaScript code here...">document.querySelector('h1').addEventListener('click', function() {
@@ -489,7 +690,7 @@ document.querySelector('p').addEventListener('click', function() {
             
             <div class="preview">
                 <div class="editor-header">
-                    <div class="editor-title">Preview</div>
+                    <div class="editor-title">👁️ Preview</div>
                 </div>
                 <div class="preview-content">
                     <iframe id="previewFrame" style="width: 100%; height: 100%; border: none;"></iframe>
@@ -498,79 +699,95 @@ document.querySelector('p').addEventListener('click', function() {
         </div>
         
         <div class="actions">
-            <div>
-                <button class="btn btn-primary" id="saveBtn">Save Snippet</button>
-                <button class="btn btn-outline" id="shareBtn">Share</button>
+            <div class="action-group">
+                <button class="btn btn-primary" id="saveBtn">💾 Save Snippet</button>
+                <button class="btn btn-outline" id="shareBtn">🔗 Share</button>
+                <button class="btn btn-warning" id="examplesBtn">📚 Examples</button>
             </div>
-            <div>
-                <button class="btn btn-outline" id="clearBtn">Clear</button>
+            <div class="action-group">
+                <button class="btn btn-outline" id="clearBtn">🗑️ Clear</button>
+            </div>
+        </div>
+        
+        <div class="code-examples" id="codeExamples">
+            <div class="language-selector">
+                <div class="language-tab active" data-lang="html">HTML</div>
+                <div class="language-tab" data-lang="css">CSS</div>
+                <div class="language-tab" data-lang="js">JavaScript</div>
+            </div>
+            
+            <div class="code-examples-content active" id="htmlExamples">
+                <div class="example-list">
+                    <div class="example-card" data-code='&lt;div class="card"&gt;\n  &lt;h2&gt;Card Title&lt;/h2&gt;\n  &lt;p&gt;This is a simple card component.&lt;/p&gt;\n  &lt;button&gt;Click Me&lt;/button&gt;\n&lt;/div&gt;'>
+                        <div class="example-title">Card Component</div>
+                        <div class="example-description">A simple card with title, text and button</div>
+                    </div>
+                    <div class="example-card" data-code='&lt;nav&gt;\n  &lt;ul&gt;\n    &lt;li&gt;&lt;a href="#"&gt;Home&lt;/a&gt;&lt;/li&gt;\n    &lt;li&gt;&lt;a href="#"&gt;About&lt;/a&gt;&lt;/li&gt;\n    &lt;li&gt;&lt;a href="#"&gt;Contact&lt;/a&gt;&lt;/li&gt;\n  &lt;/ul&gt;\n&lt;/nav&gt;'>
+                        <div class="example-title">Navigation Menu</div>
+                        <div class="example-description">A simple horizontal navigation menu</div>
+                    </div>
+                    <div class="example-card" data-code='&lt;form&gt;\n  &lt;label for="name"&gt;Name:&lt;/label&gt;\n  &lt;input type="text" id="name" name="name"&gt;\n  \n  &lt;label for="email"&gt;Email:&lt;/label&gt;\n  &lt;input type="email" id="email" name="email"&gt;\n  \n  &lt;button type="submit"&gt;Submit&lt;/button&gt;\n&lt;/form&gt;'>
+                        <div class="example-title">Contact Form</div>
+                        <div class="example-description">A simple contact form with name and email fields</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="code-examples-content" id="cssExamples">
+                <div class="example-list">
+                    <div class="example-card" data-code='.card {\n  background: white;\n  border-radius: 8px;\n  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);\n  padding: 20px;\n  max-width: 300px;\n  margin: 0 auto;\n}'>
+                        <div class="example-title">Card Styling</div>
+                        <div class="example-description">CSS for a modern card component</div>
+                    </div>
+                    <div class="example-card" data-code='.button {\n  background-color: #4361ee;\n  color: white;\n  border: none;\n  padding: 10px 20px;\n  border-radius: 4px;\n  cursor: pointer;\n  transition: background-color 0.3s;\n}\n\n.button:hover {\n  background-color: #3a56d4;\n}'>
+                        <div class="example-title">Button Styling</div>
+                        <div class="example-description">CSS for a stylish button with hover effect</div>
+                    </div>
+                    <div class="example-card" data-code='@keyframes fadeIn {\n  from { opacity: 0; }\n  to { opacity: 1; }\n}\n\n.fade-in {\n  animation: fadeIn 1s ease-in;\n}'>
+                        <div class="example-title">Fade In Animation</div>
+                        <div class="example-description">A simple fade-in animation using CSS keyframes</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="code-examples-content" id="jsExamples">
+                <div class="example-list">
+                    <div class="example-card" data-code='// Change text color on click\ndocument.querySelector("h1").addEventListener("click", function() {\n  this.style.color = this.style.color === "red" ? "blue" : "red";\n});'>
+                        <div class="example-title">Click Event Handler</div>
+                        <div class="example-description">Change text color when element is clicked</div>
+                    </div>
+                    <div class="example-card" data-code='// Simple counter\nlet count = 0;\n\nfunction updateCounter() {\n  count++;\n  document.getElementById("counter").textContent = count;\n}'>
+                        <div class="example-title">Simple Counter</div>
+                        <div class="example-description">A basic counter that increments on function call</div>
+                    </div>
+                    <div class="example-card" data-code='// Form validation\nfunction validateForm() {\n  const email = document.getElementById("email").value;\n  if (!email.includes("@")) {\n    alert("Please enter a valid email address");\n    return false;\n  }\n  return true;\n}'>
+                        <div class="example-title">Form Validation</div>
+                        <div class="example-description">Basic email validation for forms</div>
+                    </div>
+                </div>
             </div>
         </div>
         
         <div class="snippets-container">
             <div class="snippets-header">
                 <h2>My Code Snippets</h2>
-                <button class="btn btn-primary" id="loadSnippetsBtn">Refresh</button>
+                <button class="btn btn-primary" id="loadSnippetsBtn">🔄 Refresh</button>
             </div>
             <div class="snippets-list" id="snippetsList">
-                <!-- Snippets will be loaded here -->
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <h3>No snippets yet</h3>
+                    <p>Save your first code snippet to see it here!</p>
+                </div>
             </div>
         </div>
     </main>
-    
-    <!-- Login Modal -->
-    <div class="modal" id="loginModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Login</h2>
-            </div>
-            <div id="loginAlert"></div>
-            <div class="form-group">
-                <label for="loginEmail">Email</label>
-                <input type="email" id="loginEmail" class="form-control" placeholder="Enter your email">
-            </div>
-            <div class="form-group">
-                <label for="loginPassword">Password</label>
-                <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password">
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" id="closeLoginModal">Cancel</button>
-                <button class="btn btn-primary" id="confirmLogin">Login</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Signup Modal -->
-    <div class="modal" id="signupModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Sign Up</h2>
-            </div>
-            <div id="signupAlert"></div>
-            <div class="form-group">
-                <label for="signupName">Full Name</label>
-                <input type="text" id="signupName" class="form-control" placeholder="Enter your full name">
-            </div>
-            <div class="form-group">
-                <label for="signupEmail">Email</label>
-                <input type="email" id="signupEmail" class="form-control" placeholder="Enter your email">
-            </div>
-            <div class="form-group">
-                <label for="signupPassword">Password</label>
-                <input type="password" id="signupPassword" class="form-control" placeholder="Enter your password">
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" id="closeSignupModal">Cancel</button>
-                <button class="btn btn-primary" id="confirmSignup">Sign Up</button>
-            </div>
-        </div>
-    </div>
     
     <!-- Save Snippet Modal -->
     <div class="modal" id="saveModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">Save Code Snippet</h2>
+                <h2 class="modal-title">💾 Save Code Snippet</h2>
             </div>
             <div class="form-group">
                 <label for="snippetTitle">Title</label>
@@ -619,7 +836,6 @@ document.querySelector('p').addEventListener('click', function() {
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
         const db = firebase.firestore();
 
         // DOM Elements
@@ -631,36 +847,27 @@ document.querySelector('p').addEventListener('click', function() {
         const saveBtn = document.getElementById('saveBtn');
         const shareBtn = document.getElementById('shareBtn');
         const clearBtn = document.getElementById('clearBtn');
+        const examplesBtn = document.getElementById('examplesBtn');
         const loadSnippetsBtn = document.getElementById('loadSnippetsBtn');
         const snippetsList = document.getElementById('snippetsList');
-        
-        // Auth Elements
-        const authButtons = document.getElementById('authButtons');
-        const userInfo = document.getElementById('userInfo');
-        const userAvatar = document.getElementById('userAvatar');
-        const userName = document.getElementById('userName');
-        const loginBtn = document.getElementById('loginBtn');
-        const signupBtn = document.getElementById('signupBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
+        const codeExamples = document.getElementById('codeExamples');
         
         // Modal Elements
-        const loginModal = document.getElementById('loginModal');
-        const signupModal = document.getElementById('signupModal');
         const saveModal = document.getElementById('saveModal');
-        const closeLoginModal = document.getElementById('closeLoginModal');
-        const closeSignupModal = document.getElementById('closeSignupModal');
         const closeSaveModal = document.getElementById('closeSaveModal');
-        const confirmLogin = document.getElementById('confirmLogin');
-        const confirmSignup = document.getElementById('confirmSignup');
         const confirmSave = document.getElementById('confirmSave');
-        const loginAlert = document.getElementById('loginAlert');
-        const signupAlert = document.getElementById('signupAlert');
+        
+        // Language tabs
+        const languageTabs = document.querySelectorAll('.language-tab');
         
         // Run code when page loads
         window.addEventListener('DOMContentLoaded', () => {
             runCode();
-            checkAuthState();
             loadUserSnippets();
+            
+            // Set up guest user
+            document.getElementById('userName').textContent = 'Guest';
+            document.getElementById('userAvatar').textContent = 'G';
         });
         
         // Run code when button is clicked
@@ -668,30 +875,33 @@ document.querySelector('p').addEventListener('click', function() {
         
         // Save snippet button
         saveBtn.addEventListener('click', () => {
-            if (!auth.currentUser) {
-                showAlert(loginAlert, 'Please log in to save snippets', 'danger');
-                loginModal.style.display = 'flex';
-                return;
-            }
             saveModal.style.display = 'flex';
         });
         
         // Share button
         shareBtn.addEventListener('click', () => {
-            if (!auth.currentUser) {
-                showAlert(loginAlert, 'Please log in to share snippets', 'danger');
-                loginModal.style.display = 'flex';
-                return;
-            }
-            
             const snippetData = {
                 html: htmlCode.value,
                 css: cssCode.value,
                 js: jsCode.value
             };
             
-            // In a real app, this would generate a unique URL
-            alert('Share feature would generate a unique URL in a complete implementation');
+            // Create a shareable URL (in a real app, this would save to database)
+            const shareData = btoa(JSON.stringify(snippetData));
+            const shareUrl = `${window.location.origin}${window.location.pathname}?code=${shareData}`;
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert('Shareable URL copied to clipboard!');
+            }).catch(() => {
+                // Fallback for browsers that don't support clipboard API
+                prompt('Copy this URL to share:', shareUrl);
+            });
+        });
+        
+        // Examples button
+        examplesBtn.addEventListener('click', () => {
+            codeExamples.style.display = codeExamples.style.display === 'block' ? 'none' : 'block';
         });
         
         // Clear button
@@ -707,75 +917,50 @@ document.querySelector('p').addEventListener('click', function() {
         // Load snippets button
         loadSnippetsBtn.addEventListener('click', loadUserSnippets);
         
-        // Auth button events
-        loginBtn.addEventListener('click', () => loginModal.style.display = 'flex');
-        signupBtn.addEventListener('click', () => signupModal.style.display = 'flex');
-        logoutBtn.addEventListener('click', () => {
-            auth.signOut();
-            userInfo.style.display = 'none';
-            authButtons.style.display = 'flex';
-        });
-        
         // Modal close events
-        closeLoginModal.addEventListener('click', () => loginModal.style.display = 'none');
-        closeSignupModal.addEventListener('click', () => signupModal.style.display = 'none');
         closeSaveModal.addEventListener('click', () => saveModal.style.display = 'none');
         
-        // Confirm login
-        confirmLogin.addEventListener('click', () => {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!email || !password) {
-                showAlert(loginAlert, 'Please fill in all fields', 'danger');
-                return;
-            }
-            
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    loginModal.style.display = 'none';
-                    document.getElementById('loginEmail').value = '';
-                    document.getElementById('loginPassword').value = '';
-                    loginAlert.innerHTML = '';
-                })
-                .catch((error) => {
-                    showAlert(loginAlert, error.message, 'danger');
+        // Language tab events
+        languageTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs
+                languageTabs.forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                
+                // Hide all examples
+                document.querySelectorAll('.code-examples-content').forEach(content => {
+                    content.classList.remove('active');
                 });
+                
+                // Show selected examples
+                const lang = tab.getAttribute('data-lang');
+                document.getElementById(`${lang}Examples`).classList.add('active');
+            });
         });
         
-        // Confirm signup
-        confirmSignup.addEventListener('click', () => {
-            const name = document.getElementById('signupName').value;
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-            
-            if (!name || !email || !password) {
-                showAlert(signupAlert, 'Please fill in all fields', 'danger');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showAlert(signupAlert, 'Password should be at least 6 characters', 'danger');
-                return;
-            }
-            
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Update user profile
-                    return userCredential.user.updateProfile({
-                        displayName: name
-                    });
-                })
-                .then(() => {
-                    signupModal.style.display = 'none';
-                    document.getElementById('signupName').value = '';
-                    document.getElementById('signupEmail').value = '';
-                    document.getElementById('signupPassword').value = '';
-                    signupAlert.innerHTML = '';
-                })
-                .catch((error) => {
-                    showAlert(signupAlert, error.message, 'danger');
-                });
+        // Example card events
+        document.querySelectorAll('.example-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const code = card.getAttribute('data-code');
+                const lang = card.closest('.code-examples-content').id.replace('Examples', '');
+                
+                // Insert code into the appropriate editor
+                if (lang === 'html') {
+                    htmlCode.value = code;
+                } else if (lang === 'css') {
+                    cssCode.value = code;
+                } else if (lang === 'js') {
+                    jsCode.value = code;
+                }
+                
+                // Run the code
+                runCode();
+                
+                // Close examples panel
+                codeExamples.style.display = 'none';
+            });
         });
         
         // Confirm save
@@ -806,27 +991,9 @@ document.querySelector('p').addEventListener('click', function() {
             previewDocument.close();
         }
         
-        function checkAuthState() {
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    // User is signed in
-                    authButtons.style.display = 'none';
-                    userInfo.style.display = 'flex';
-                    userName.textContent = user.displayName || 'User';
-                    userAvatar.textContent = (user.displayName || 'U').charAt(0).toUpperCase();
-                    loadUserSnippets();
-                } else {
-                    // User is signed out
-                    authButtons.style.display = 'flex';
-                    userInfo.style.display = 'none';
-                    snippetsList.innerHTML = '<p>Please log in to view your snippets</p>';
-                }
-            });
-        }
-        
         function saveSnippet(title, description) {
-            const user = auth.currentUser;
-            if (!user) return;
+            // Generate a unique ID for the snippet
+            const snippetId = 'snippet_' + Date.now();
             
             const snippetData = {
                 title: title,
@@ -834,93 +1001,73 @@ document.querySelector('p').addEventListener('click', function() {
                 html: htmlCode.value,
                 css: cssCode.value,
                 js: jsCode.value,
-                userId: user.uid,
-                userName: user.displayName,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                id: snippetId,
+                createdAt: new Date().toISOString()
             };
             
-            db.collection('snippets').add(snippetData)
-                .then(() => {
-                    alert('Snippet saved successfully!');
-                    loadUserSnippets();
-                })
-                .catch((error) => {
-                    alert('Error saving snippet: ' + error.message);
-                });
+            // Save to localStorage
+            let snippets = JSON.parse(localStorage.getItem('codeRunSnippets') || '[]');
+            snippets.push(snippetData);
+            localStorage.setItem('codeRunSnippets', JSON.stringify(snippets));
+            
+            alert('Snippet saved successfully!');
+            loadUserSnippets();
         }
         
         function loadUserSnippets() {
-            const user = auth.currentUser;
-            if (!user) {
-                snippetsList.innerHTML = '<p>Please log in to view your snippets</p>';
+            const snippets = JSON.parse(localStorage.getItem('codeRunSnippets') || '[]');
+            
+            if (snippets.length === 0) {
+                snippetsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <h3>No snippets yet</h3>
+                        <p>Save your first code snippet to see it here!</p>
+                    </div>
+                `;
                 return;
             }
             
-            snippetsList.innerHTML = '<p>Loading your snippets...</p>';
+            snippetsList.innerHTML = '';
+            snippets.forEach((snippet) => {
+                const snippetElement = document.createElement('div');
+                snippetElement.className = 'snippet-card';
+                snippetElement.innerHTML = `
+                    <div class="snippet-title">${snippet.title}</div>
+                    <div class="snippet-description">${snippet.description || 'No description'}</div>
+                    <div class="snippet-meta">
+                        <span>${formatDate(snippet.createdAt)}</span>
+                        <button class="btn btn-outline load-snippet" data-id="${snippet.id}">Load</button>
+                    </div>
+                `;
+                snippetsList.appendChild(snippetElement);
+            });
             
-            db.collection('snippets')
-                .where('userId', '==', user.uid)
-                .orderBy('createdAt', 'desc')
-                .get()
-                .then((querySnapshot) => {
-                    if (querySnapshot.empty) {
-                        snippetsList.innerHTML = '<p>You have no saved snippets yet.</p>';
-                        return;
-                    }
-                    
-                    snippetsList.innerHTML = '';
-                    querySnapshot.forEach((doc) => {
-                        const snippet = doc.data();
-                        const snippetElement = document.createElement('div');
-                        snippetElement.className = 'snippet-card';
-                        snippetElement.innerHTML = `
-                            <div class="snippet-title">${snippet.title}</div>
-                            <div class="snippet-description">${snippet.description || 'No description'}</div>
-                            <div class="snippet-meta">
-                                <span>${formatDate(snippet.createdAt?.toDate())}</span>
-                                <button class="btn btn-outline load-snippet" data-id="${doc.id}">Load</button>
-                            </div>
-                        `;
-                        snippetsList.appendChild(snippetElement);
-                    });
-                    
-                    // Add event listeners to load buttons
-                    document.querySelectorAll('.load-snippet').forEach(button => {
-                        button.addEventListener('click', (e) => {
-                            const snippetId = e.target.getAttribute('data-id');
-                            loadSnippet(snippetId);
-                        });
-                    });
-                })
-                .catch((error) => {
-                    snippetsList.innerHTML = '<p>Error loading snippets: ' + error.message + '</p>';
+            // Add event listeners to load buttons
+            document.querySelectorAll('.load-snippet').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const snippetId = e.target.getAttribute('data-id');
+                    loadSnippet(snippetId);
                 });
+            });
         }
         
         function loadSnippet(snippetId) {
-            db.collection('snippets').doc(snippetId).get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        const snippet = doc.data();
-                        htmlCode.value = snippet.html || '';
-                        cssCode.value = snippet.css || '';
-                        jsCode.value = snippet.js || '';
-                        runCode();
-                    } else {
-                        alert('Snippet not found');
-                    }
-                })
-                .catch((error) => {
-                    alert('Error loading snippet: ' + error.message);
-                });
+            const snippets = JSON.parse(localStorage.getItem('codeRunSnippets') || '[]');
+            const snippet = snippets.find(s => s.id === snippetId);
+            
+            if (snippet) {
+                htmlCode.value = snippet.html || '';
+                cssCode.value = snippet.css || '';
+                jsCode.value = snippet.js || '';
+                runCode();
+            } else {
+                alert('Snippet not found');
+            }
         }
         
-        function showAlert(container, message, type) {
-            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
-        }
-        
-        function formatDate(date) {
-            if (!date) return 'Unknown date';
+        function formatDate(dateString) {
+            const date = new Date(dateString);
             return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
         }
     </script>
