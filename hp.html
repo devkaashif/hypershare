@@ -324,7 +324,6 @@
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body>
     <!-- Header -->
@@ -460,22 +459,29 @@
                         </div>
                     </div>
                 </div>
-                <form id="contactForm">
+                <!-- FormSubmit form - replace YOUR_EMAIL with knesaj711@gmail.com -->
+                <form action="https://formsubmit.co/knesaj711@gmail.com" method="POST" id="contactForm">
+                    <!-- FormSubmit configuration -->
+                    <input type="hidden" name="_subject" value="New contact from Kaashif's website">
+                    <input type="hidden" name="_template" value="table">
+                    <input type="hidden" name="_captcha" value="false">
+                    <input type="hidden" name="_next" value="#contact">
+                    
                     <div class="form-group">
                         <label for="name">Your Name</label>
-                        <input type="text" id="name" required>
+                        <input type="text" id="name" name="name" required>
                     </div>
                     <div class="form-group">
                         <label for="email">Your Email</label>
-                        <input type="email" id="email" required>
+                        <input type="email" id="email" name="email" required>
                     </div>
                     <div class="form-group">
                         <label for="subject">Subject</label>
-                        <input type="text" id="subject" required>
+                        <input type="text" id="subject" name="subject" required>
                     </div>
                     <div class="form-group">
                         <label for="message">Message</label>
-                        <textarea id="message" required></textarea>
+                        <textarea id="message" name="message" required></textarea>
                     </div>
                     <div class="spinner" id="formSpinner"></div>
                     <button type="submit" class="btn" id="submitBtn">Send Message</button>
@@ -501,13 +507,6 @@
     <div id="notification" class="notification"></div>
 
     <script>
-        // Initialize EmailJS with your public key
-        // You need to sign up at https://www.emailjs.com/ and create a service
-        // Then replace this with your actual public key
-        (function() {
-            emailjs.init("IsaH2GNco6utB9iGa"); // Replace with your EmailJS public key
-        })();
-
         // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -526,10 +525,8 @@
             });
         });
         
-        // Form submission handler
+        // Form submission handler for better UX
         document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
             const submitBtn = document.getElementById('submitBtn');
             const spinner = document.getElementById('formSpinner');
             
@@ -537,30 +534,19 @@
             submitBtn.disabled = true;
             spinner.style.display = 'block';
             
-            // Get form data
-            const formData = {
-                from_name: document.getElementById('name').value,
-                from_email: document.getElementById('email').value,
-                subject: document.getElementById('subject').value,
-                message: document.getElementById('message').value,
-                to_email: "knesaj711@gmail.com" // Your email address
-            };
-            
-            // Send email using EmailJS
-            emailjs.send('service_cci49z6', 'template_5hsolnp', formData)
-                .then(function(response) {
-                    console.log('SUCCESS!', response.status, response.text);
-                    showNotification('Message sent successfully! I\'ll get back to you soon.', 'success');
-                    document.getElementById('contactForm').reset();
-                }, function(error) {
-                    console.log('FAILED...', error);
-                    showNotification('Error sending message. Please try again or contact me directly at knesaj711@gmail.com', 'error');
-                })
-                .finally(() => {
-                    // Reset loading state
-                    submitBtn.disabled = false;
-                    spinner.style.display = 'none';
-                });
+            // The form will still submit normally to FormSubmit
+            // This is just for better UX
+            setTimeout(() => {
+                showNotification('Message sent successfully! I\'ll get back to you soon.', 'success');
+            }, 1000);
+        });
+        
+        // Check if we're returning from FormSubmit (URL might have parameters)
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('success') && urlParams.get('success') === 'true') {
+                showNotification('Message sent successfully! I\'ll get back to you soon.', 'success');
+            }
         });
         
         // Notification function
