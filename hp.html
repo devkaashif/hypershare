@@ -109,6 +109,10 @@
             transform: none;
         }
 
+        .delete-room {
+            background: #dc3545;
+        }
+
         .room-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -121,6 +125,7 @@
             padding: 15px;
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .room-card:hover {
@@ -136,6 +141,27 @@
         .room-info {
             font-size: 0.9rem;
             opacity: 0.8;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .delete-room-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(220, 53, 69, 0.7);
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            padding: 0;
+        }
+
+        .delete-room-btn:hover {
+            background: #dc3545;
         }
 
         .art-canvas-container {
@@ -150,6 +176,7 @@
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             cursor: crosshair;
+            max-width: 100%;
         }
 
         .tools {
@@ -157,6 +184,7 @@
             gap: 10px;
             flex-wrap: wrap;
             justify-content: center;
+            align-items: center;
         }
 
         .tool-btn {
@@ -182,6 +210,12 @@
             border-radius: 50%;
             overflow: hidden;
             cursor: pointer;
+        }
+
+        .brush-size {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .art-gallery {
@@ -247,6 +281,10 @@
             transform: translateX(0);
         }
 
+        .notification.error {
+            background: #dc3545;
+        }
+
         @media (max-width: 768px) {
             .room-controls {
                 flex-direction: column;
@@ -254,6 +292,11 @@
             
             input, button {
                 width: 100%;
+            }
+            
+            canvas {
+                width: 100%;
+                height: auto;
             }
         }
     </style>
@@ -276,7 +319,10 @@
                 
                 <div id="currentRoomInfo" class="current-room" style="display: none;">
                     <span>Current Room: <strong id="currentRoomName"></strong></span>
-                    <button id="leaveRoomBtn" class="leave-room">Leave Room</button>
+                    <div>
+                        <button id="deleteRoomBtn" class="delete-room">Delete Room</button>
+                        <button id="leaveRoomBtn" class="leave-room">Leave Room</button>
+                    </div>
                 </div>
                 
                 <div class="room-list" id="roomList">
@@ -289,9 +335,13 @@
                 <div class="art-canvas-container">
                     <canvas id="artCanvas" width="800" height="500"></canvas>
                     <div class="tools">
-                        <div class="tool-btn active" data-tool="pencil">✏️</div>
-                        <div class="tool-btn" data-tool="eraser">🧽</div>
-                        <input type="color" id="colorPicker" class="color-picker" value="#000000">
+                        <div class="tool-btn active" data-tool="pencil" title="Pencil">✏️</div>
+                        <div class="tool-btn" data-tool="eraser" title="Eraser">🧽</div>
+                        <input type="color" id="colorPicker" class="color-picker" value="#000000" title="Color Picker">
+                        <div class="brush-size">
+                            <span>Size:</span>
+                            <input type="range" id="brushSize" min="1" max="50" value="5">
+                        </div>
                         <button id="clearCanvasBtn">Clear</button>
                         <button id="saveArtBtn">Save Art</button>
                     </div>
@@ -329,6 +379,7 @@
         const createRoomBtn = document.getElementById('createRoomBtn');
         const joinRoomBtn = document.getElementById('joinRoomBtn');
         const leaveRoomBtn = document.getElementById('leaveRoomBtn');
+        const deleteRoomBtn = document.getElementById('deleteRoomBtn');
         const currentRoomInfo = document.getElementById('currentRoomInfo');
         const currentRoomName = document.getElementById('currentRoomName');
         const roomList = document.getElementById('roomList');
@@ -336,6 +387,7 @@
         const clearCanvasBtn = document.getElementById('clearCanvasBtn');
         const saveArtBtn = document.getElementById('saveArtBtn');
         const colorPicker = document.getElementById('colorPicker');
+        const brushSize = document.getElementById('brushSize');
         const toolButtons = document.querySelectorAll('.tool-btn');
         const artGallery = document.getElementById('artGallery');
         const notification = document.getElementById('notification');
@@ -353,6 +405,7 @@
         let lastY = 0;
         let currentTool = 'pencil';
         let currentColor = '#000000';
+        let currentBrushSize = 5;
 
         // Initialize
         function init() {
@@ -366,10 +419,15 @@
             createRoomBtn.addEventListener('click', createRoom);
             joinRoomBtn.addEventListener('click', joinRoom);
             leaveRoomBtn.addEventListener('click', leaveRoom);
+            deleteRoomBtn.addEventListener('click', deleteRoom);
             clearCanvasBtn.addEventListener('click', clearCanvas);
             saveArtBtn.addEventListener('click', saveArt);
             colorPicker.addEventListener('change', (e) => {
                 currentColor = e.target.value;
+            });
+            brushSize.addEventListener('input', (e) => {
+                currentBrushSize = parseInt(e.target.value);
+                ctx.lineWidth = currentBrushSize;
             });
 
             // Tool selection
@@ -463,7 +521,7 @@
         function createRoom() {
             const roomName = roomNameInput.value.trim();
             if (!roomName) {
-                showNotification('Please enter a room name');
+                showNotification('Please enter a room name', 'error');
                 return;
             }
 
@@ -490,14 +548,14 @@
             })
             .catch((error) => {
                 console.error('Error creating room: ', error);
-                showNotification('Error creating room. Please try again.');
+                showNotification('Error creating room. Please try again.', 'error');
             });
         }
 
         function joinRoom() {
             const roomName = roomNameInput.value.trim();
             if (!roomName) {
-                showNotification('Please enter a room name');
+                showNotification('Please enter a room name', 'error');
                 return;
             }
 
@@ -506,7 +564,7 @@
                 .get()
                 .then((querySnapshot) => {
                     if (querySnapshot.empty) {
-                        showNotification('Room not found');
+                        showNotification('Room not found', 'error');
                         return;
                     }
 
@@ -531,7 +589,7 @@
                 })
                 .catch((error) => {
                     console.error('Error joining room: ', error);
-                    showNotification('Error joining room. Please try again.');
+                    showNotification('Error joining room. Please try again.', 'error');
                 });
         }
 
@@ -551,6 +609,50 @@
             artGallery.innerHTML = '';
         }
 
+        function deleteRoom() {
+            if (!currentRoom) return;
+            
+            if (!confirm(`Are you sure you want to delete the room "${currentRoom.name}"? This will also delete all artworks in this room.`)) {
+                return;
+            }
+            
+            // Delete all artworks in this room first
+            db.collection('artworks')
+                .where('roomId', '==', currentRoom.id)
+                .get()
+                .then((querySnapshot) => {
+                    const deletePromises = [];
+                    
+                    querySnapshot.forEach((doc) => {
+                        // Delete from storage
+                        const artData = doc.data();
+                        if (artData.imageUrl) {
+                            const imageRef = storage.refFromURL(artData.imageUrl);
+                            deletePromises.push(imageRef.delete());
+                        }
+                        
+                        // Delete from firestore
+                        deletePromises.push(doc.ref.delete());
+                    });
+                    
+                    return Promise.all(deletePromises);
+                })
+                .then(() => {
+                    // Delete the room itself
+                    return db.collection('rooms').doc(currentRoom.id).delete();
+                })
+                .then(() => {
+                    showNotification(`Room "${currentRoom.name}" deleted successfully`);
+                    currentRoom = null;
+                    updateRoomUI();
+                    artGallery.innerHTML = '';
+                })
+                .catch((error) => {
+                    console.error('Error deleting room: ', error);
+                    showNotification('Error deleting room. Please try again.', 'error');
+                });
+        }
+
         function loadRooms() {
             db.collection('rooms')
                 .orderBy('createdAt', 'desc')
@@ -563,16 +665,73 @@
                         roomCard.className = 'room-card';
                         roomCard.innerHTML = `
                             <div class="room-name">${room.name}</div>
-                            <div class="room-info">Users: ${room.userCount || 0}</div>
+                            <div class="room-info">
+                                <span>Users: ${room.userCount || 0}</span>
+                                <span>Created by: ${room.createdBy ? room.createdBy.substring(0, 8) : 'Unknown'}</span>
+                            </div>
+                            <button class="delete-room-btn" data-room-id="${doc.id}">×</button>
                         `;
                         
-                        roomCard.addEventListener('click', () => {
+                        roomCard.addEventListener('click', (e) => {
+                            // Don't trigger room selection if delete button was clicked
+                            if (e.target.classList.contains('delete-room-btn')) return;
                             roomNameInput.value = room.name;
                             joinRoom();
                         });
                         
+                        // Add event listener for delete button
+                        const deleteBtn = roomCard.querySelector('.delete-room-btn');
+                        deleteBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            if (confirm(`Are you sure you want to delete the room "${room.name}"?`)) {
+                                // Delete room and its artworks
+                                deleteRoomById(doc.id, room.name);
+                            }
+                        });
+                        
                         roomList.appendChild(roomCard);
                     });
+                });
+        }
+
+        function deleteRoomById(roomId, roomName) {
+            // Delete all artworks in this room first
+            db.collection('artworks')
+                .where('roomId', '==', roomId)
+                .get()
+                .then((querySnapshot) => {
+                    const deletePromises = [];
+                    
+                    querySnapshot.forEach((doc) => {
+                        // Delete from storage
+                        const artData = doc.data();
+                        if (artData.imageUrl) {
+                            const imageRef = storage.refFromURL(artData.imageUrl);
+                            deletePromises.push(imageRef.delete());
+                        }
+                        
+                        // Delete from firestore
+                        deletePromises.push(doc.ref.delete());
+                    });
+                    
+                    return Promise.all(deletePromises);
+                })
+                .then(() => {
+                    // Delete the room itself
+                    return db.collection('rooms').doc(roomId).delete();
+                })
+                .then(() => {
+                    showNotification(`Room "${roomName}" deleted successfully`);
+                    // If we're currently in this room, leave it
+                    if (currentRoom && currentRoom.id === roomId) {
+                        currentRoom = null;
+                        updateRoomUI();
+                        artGallery.innerHTML = '';
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error deleting room: ', error);
+                    showNotification('Error deleting room. Please try again.', 'error');
                 });
         }
 
@@ -588,7 +747,7 @@
         // Art management
         function saveArt() {
             if (!currentRoom) {
-                showNotification('Please join a room first');
+                showNotification('Please join a room first', 'error');
                 return;
             }
 
@@ -628,7 +787,7 @@
                 })
                 .catch((error) => {
                     console.error('Error saving art: ', error);
-                    showNotification('Error saving art. Please try again.');
+                    showNotification('Error saving art. Please try again.', 'error');
                 });
         }
 
@@ -649,6 +808,7 @@
                             <img src="${art.imageUrl}" alt="Artwork">
                             <div class="art-info">
                                 <div>Room: ${art.roomName}</div>
+                                <div>By: ${art.createdBy ? art.createdBy.substring(0, 8) : 'Unknown'}</div>
                             </div>
                         `;
                         
@@ -670,9 +830,10 @@
         }
 
         // Utility functions
-        function showNotification(message) {
+        function showNotification(message, type = 'success') {
             notification.textContent = message;
-            notification.classList.add('show');
+            notification.className = 'notification';
+            notification.classList.add(type === 'error' ? 'error' : 'show');
             
             setTimeout(() => {
                 notification.classList.remove('show');
