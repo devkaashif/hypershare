@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MemeMosaic - Collaborative Pixel Art</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <title>Live Art Sharing</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
             min-height: 100vh;
             padding: 20px;
         }
@@ -24,185 +25,235 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
         }
 
         header {
-            background: #ff6b6b;
-            color: white;
-            padding: 20px;
             text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
         }
 
         h1 {
-            font-size: 2.5em;
+            font-size: 2.5rem;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 0 #ff8e8e;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .subtitle {
-            font-size: 1.2em;
+            font-size: 1.2rem;
             opacity: 0.9;
         }
 
         .main-content {
-            display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 20px;
-            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
         }
 
-        .canvas-container {
-            background: #f8f9fa;
+        .room-section, .art-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 20px;
-            border: 3px solid #ffd166;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
 
-        #pixelCanvas {
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .room-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        input, button {
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        input {
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            min-width: 200px;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        button {
+            background: #ff6b6b;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .room-list {
             display: grid;
-            grid-template-columns: repeat(20, 1fr);
-            grid-template-rows: repeat(20, 1fr);
-            gap: 2px;
-            background: #ddd;
-            border: 3px solid #333;
-            margin: 0 auto;
-            width: 500px;
-            height: 500px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
         }
 
-        .pixel {
+        .room-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .room-card:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-5px);
+        }
+
+        .room-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .room-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .art-canvas-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        canvas {
             background: white;
-            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            cursor: crosshair;
+        }
+
+        .tools {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tool-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.2);
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
-        .pixel:hover {
-            transform: scale(1.1);
-            z-index: 1;
-            position: relative;
+        .tool-btn.active {
+            background: #ff6b6b;
         }
 
-        .controls {
-            background: #06d6a0;
-            padding: 20px;
-            border-radius: 15px;
-            color: white;
-        }
-
-        .color-palette {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .color-option {
-            width: 50px;
-            height: 50px;
-            border: 3px solid white;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-
-        .color-option:hover {
-            transform: scale(1.1);
-        }
-
-        .color-option.active {
-            border-color: #333;
-            transform: scale(1.1);
-        }
-
-        button {
-            background: #118ab2;
-            color: white;
+        .color-picker {
+            width: 40px;
+            height: 40px;
             border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
+            border-radius: 50%;
+            overflow: hidden;
             cursor: pointer;
-            font-size: 1em;
-            margin: 5px;
-            transition: all 0.3s ease;
         }
 
-        button:hover {
-            background: #0a6c8f;
-            transform: translateY(-2px);
-        }
-
-        .user-info {
-            background: #073b4c;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-
-        .online-users {
-            margin-top: 20px;
-        }
-
-        .user-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .user-badge {
-            background: #ffd166;
-            color: #333;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.9em;
-        }
-
-        .meme-templates {
-            margin-top: 20px;
-        }
-
-        .template-grid {
+        .art-gallery {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
         }
 
-        .template {
-            background: #ef476f;
-            padding: 10px;
+        .art-item {
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
+            overflow: hidden;
             transition: all 0.3s ease;
         }
 
-        .template:hover {
-            background: #ff6b8b;
+        .art-item:hover {
             transform: scale(1.05);
         }
 
-        footer {
-            background: #073b4c;
+        .art-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .art-info {
+            padding: 10px;
+            font-size: 0.9rem;
+        }
+
+        .current-room {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .leave-room {
+            background: #dc3545;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
             color: white;
-            text-align: center;
-            padding: 20px;
-            margin-top: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
         }
 
         @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
+            .room-controls {
+                flex-direction: column;
             }
             
-            #pixelCanvas {
-                width: 300px;
-                height: 300px;
+            input, button {
+                width: 100%;
             }
         }
     </style>
@@ -210,57 +261,51 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎨 MemeMosaic 🎨</h1>
-            <div class="subtitle">Collaborative Pixel Art for Meme Lovers!</div>
+            <h1>Live Art Sharing</h1>
+            <p class="subtitle">Create, share, and collaborate in real-time - no sign up required!</p>
         </header>
 
         <div class="main-content">
-            <div class="canvas-container">
-                <div id="pixelCanvas"></div>
-            </div>
-
-            <div class="controls">
-                <h3>🎨 Paint Tools</h3>
-                <div class="color-palette">
-                    <div class="color-option active" style="background: #ff6b6b;" data-color="#ff6b6b"></div>
-                    <div class="color-option" style="background: #06d6a0;" data-color="#06d6a0"></div>
-                    <div class="color-option" style="background: #118ab2;" data-color="#118ab2"></div>
-                    <div class="color-option" style="background: #ffd166;" data-color="#ffd166"></div>
-                    <div class="color-option" style="background: #ef476f;" data-color="#ef476f"></div>
-                    <div class="color-option" style="background: #073b4c;" data-color="#073b4c"></div>
-                    <div class="color-option" style="background: #ffffff;" data-color="#ffffff"></div>
-                    <div class="color-option" style="background: #000000;" data-color="#000000"></div>
+            <section class="room-section">
+                <h2 class="section-title">Rooms</h2>
+                <div class="room-controls">
+                    <input type="text" id="roomNameInput" placeholder="Enter room name">
+                    <button id="createRoomBtn">Create Room</button>
+                    <button id="joinRoomBtn">Join Room</button>
                 </div>
+                
+                <div id="currentRoomInfo" class="current-room" style="display: none;">
+                    <span>Current Room: <strong id="currentRoomName"></strong></span>
+                    <button id="leaveRoomBtn" class="leave-room">Leave Room</button>
+                </div>
+                
+                <div class="room-list" id="roomList">
+                    <!-- Rooms will be populated here -->
+                </div>
+            </section>
 
-                <button id="clearBtn">🧹 Clear Canvas</button>
-                <button id="saveBtn">💾 Save Artwork</button>
-
-                <div class="meme-templates">
-                    <h3>📚 Meme Templates</h3>
-                    <div class="template-grid">
-                        <div class="template" data-template="doge">Doge</div>
-                        <div class="template" data-template="pepe">Pepe</div>
-                        <div class="template" data-template="stonks">Stonks</div>
-                        <div class="template" data-template="wojak">Wojak</div>
+            <section class="art-section">
+                <h2 class="section-title">Create Art</h2>
+                <div class="art-canvas-container">
+                    <canvas id="artCanvas" width="800" height="500"></canvas>
+                    <div class="tools">
+                        <div class="tool-btn active" data-tool="pencil">✏️</div>
+                        <div class="tool-btn" data-tool="eraser">🧽</div>
+                        <input type="color" id="colorPicker" class="color-picker" value="#000000">
+                        <button id="clearCanvasBtn">Clear</button>
+                        <button id="saveArtBtn">Save Art</button>
                     </div>
                 </div>
-
-                <div class="user-info">
-                    <h3>👥 Live Collaboration</h3>
-                    <div id="userCount">Online: 1</div>
-                    <div class="online-users">
-                        <div class="user-list" id="userList">
-                            <div class="user-badge">You</div>
-                        </div>
-                    </div>
+                
+                <h2 class="section-title" style="margin-top: 30px;">Gallery</h2>
+                <div class="art-gallery" id="artGallery">
+                    <!-- Artworks will be displayed here -->
                 </div>
-            </div>
+            </section>
         </div>
-
-        <footer>
-            <p>Create amazing meme art together in real-time! Every pixel counts! 🚀</p>
-        </footer>
     </div>
+
+    <div class="notification" id="notification"></div>
 
     <script>
         // Firebase configuration
@@ -277,172 +322,365 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        const auth = firebase.auth();
-
-        // Game state
-        let currentColor = '#ff6b6b';
-        let currentUser = null;
-        let users = new Set();
+        const storage = firebase.storage();
 
         // DOM elements
-        const pixelCanvas = document.getElementById('pixelCanvas');
-        const colorOptions = document.querySelectorAll('.color-option');
-        const clearBtn = document.getElementById('clearBtn');
-        const saveBtn = document.getElementById('saveBtn');
-        const userCount = document.getElementById('userCount');
-        const userList = document.getElementById('userList');
-        const templates = document.querySelectorAll('.template');
+        const roomNameInput = document.getElementById('roomNameInput');
+        const createRoomBtn = document.getElementById('createRoomBtn');
+        const joinRoomBtn = document.getElementById('joinRoomBtn');
+        const leaveRoomBtn = document.getElementById('leaveRoomBtn');
+        const currentRoomInfo = document.getElementById('currentRoomInfo');
+        const currentRoomName = document.getElementById('currentRoomName');
+        const roomList = document.getElementById('roomList');
+        const artCanvas = document.getElementById('artCanvas');
+        const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+        const saveArtBtn = document.getElementById('saveArtBtn');
+        const colorPicker = document.getElementById('colorPicker');
+        const toolButtons = document.querySelectorAll('.tool-btn');
+        const artGallery = document.getElementById('artGallery');
+        const notification = document.getElementById('notification');
 
-        // Initialize canvas
-        function initializeCanvas() {
-            pixelCanvas.innerHTML = '';
-            for (let i = 0; i < 400; i++) {
-                const pixel = document.createElement('div');
-                pixel.className = 'pixel';
-                pixel.dataset.index = i;
-                
-                pixel.addEventListener('click', () => {
-                    updatePixel(i, currentColor);
+        // Canvas context
+        const ctx = artCanvas.getContext('2d');
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 5;
+
+        // App state
+        let currentRoom = null;
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let currentTool = 'pencil';
+        let currentColor = '#000000';
+
+        // Initialize
+        function init() {
+            loadRooms();
+            setupCanvas();
+            setupEventListeners();
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            createRoomBtn.addEventListener('click', createRoom);
+            joinRoomBtn.addEventListener('click', joinRoom);
+            leaveRoomBtn.addEventListener('click', leaveRoom);
+            clearCanvasBtn.addEventListener('click', clearCanvas);
+            saveArtBtn.addEventListener('click', saveArt);
+            colorPicker.addEventListener('change', (e) => {
+                currentColor = e.target.value;
+            });
+
+            // Tool selection
+            toolButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    toolButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    currentTool = button.dataset.tool;
                 });
+            });
+
+            // Canvas events
+            artCanvas.addEventListener('mousedown', startDrawing);
+            artCanvas.addEventListener('mousemove', draw);
+            artCanvas.addEventListener('mouseup', stopDrawing);
+            artCanvas.addEventListener('mouseout', stopDrawing);
+
+            // Touch events for mobile
+            artCanvas.addEventListener('touchstart', handleTouchStart);
+            artCanvas.addEventListener('touchmove', handleTouchMove);
+            artCanvas.addEventListener('touchend', stopDrawing);
+        }
+
+        // Setup canvas
+        function setupCanvas() {
+            // Set initial canvas background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, artCanvas.width, artCanvas.height);
+        }
+
+        // Drawing functions
+        function startDrawing(e) {
+            isDrawing = true;
+            [lastX, lastY] = getCoordinates(e);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            const [x, y] = getCoordinates(e);
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            
+            if (currentTool === 'pencil') {
+                ctx.strokeStyle = currentColor;
+                ctx.stroke();
+            } else if (currentTool === 'eraser') {
+                ctx.strokeStyle = 'white';
+                ctx.stroke();
+            }
+            
+            [lastX, lastY] = [x, y];
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function getCoordinates(e) {
+            let x, y;
+            
+            if (e.type.includes('touch')) {
+                x = e.touches[0].clientX - artCanvas.getBoundingClientRect().left;
+                y = e.touches[0].clientY - artCanvas.getBoundingClientRect().top;
+            } else {
+                x = e.offsetX;
+                y = e.offsetY;
+            }
+            
+            return [x, y];
+        }
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            startDrawing(e);
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            draw(e);
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, artCanvas.width, artCanvas.height);
+        }
+
+        // Room management
+        function createRoom() {
+            const roomName = roomNameInput.value.trim();
+            if (!roomName) {
+                showNotification('Please enter a room name');
+                return;
+            }
+
+            // Generate a random user ID for this session
+            const userId = 'user_' + Math.random().toString(36).substr(2, 9);
+            
+            db.collection('rooms').add({
+                name: roomName,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                createdBy: userId,
+                userCount: 1
+            })
+            .then((docRef) => {
+                currentRoom = {
+                    id: docRef.id,
+                    name: roomName
+                };
+                updateRoomUI();
+                showNotification(`Room "${roomName}" created successfully!`);
+                roomNameInput.value = '';
                 
-                pixelCanvas.appendChild(pixel);
+                // Listen for art updates in this room
+                listenForArtUpdates();
+            })
+            .catch((error) => {
+                console.error('Error creating room: ', error);
+                showNotification('Error creating room. Please try again.');
+            });
+        }
+
+        function joinRoom() {
+            const roomName = roomNameInput.value.trim();
+            if (!roomName) {
+                showNotification('Please enter a room name');
+                return;
+            }
+
+            db.collection('rooms')
+                .where('name', '==', roomName)
+                .get()
+                .then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        showNotification('Room not found');
+                        return;
+                    }
+
+                    const roomDoc = querySnapshot.docs[0];
+                    currentRoom = {
+                        id: roomDoc.id,
+                        name: roomDoc.data().name
+                    };
+                    
+                    // Update user count
+                    db.collection('rooms').doc(roomDoc.id).update({
+                        userCount: firebase.firestore.FieldValue.increment(1)
+                    });
+                    
+                    updateRoomUI();
+                    showNotification(`Joined room "${roomName}"!`);
+                    roomNameInput.value = '';
+                    
+                    // Listen for art updates in this room
+                    listenForArtUpdates();
+                    loadRoomArt();
+                })
+                .catch((error) => {
+                    console.error('Error joining room: ', error);
+                    showNotification('Error joining room. Please try again.');
+                });
+        }
+
+        function leaveRoom() {
+            if (!currentRoom) return;
+            
+            // Decrement user count
+            db.collection('rooms').doc(currentRoom.id).update({
+                userCount: firebase.firestore.FieldValue.increment(-1)
+            });
+            
+            currentRoom = null;
+            updateRoomUI();
+            showNotification('Left the room');
+            
+            // Clear the gallery when leaving a room
+            artGallery.innerHTML = '';
+        }
+
+        function loadRooms() {
+            db.collection('rooms')
+                .orderBy('createdAt', 'desc')
+                .onSnapshot((querySnapshot) => {
+                    roomList.innerHTML = '';
+                    
+                    querySnapshot.forEach((doc) => {
+                        const room = doc.data();
+                        const roomCard = document.createElement('div');
+                        roomCard.className = 'room-card';
+                        roomCard.innerHTML = `
+                            <div class="room-name">${room.name}</div>
+                            <div class="room-info">Users: ${room.userCount || 0}</div>
+                        `;
+                        
+                        roomCard.addEventListener('click', () => {
+                            roomNameInput.value = room.name;
+                            joinRoom();
+                        });
+                        
+                        roomList.appendChild(roomCard);
+                    });
+                });
+        }
+
+        function updateRoomUI() {
+            if (currentRoom) {
+                currentRoomName.textContent = currentRoom.name;
+                currentRoomInfo.style.display = 'flex';
+            } else {
+                currentRoomInfo.style.display = 'none';
             }
         }
 
-        // Update pixel color
-        function updatePixel(index, color) {
-            const pixel = document.querySelector(`.pixel[data-index="${index}"]`);
-            pixel.style.background = color;
-            
-            // Save to Firebase
-            db.collection('canvas').doc(index.toString()).set({
-                color: color,
-                updatedBy: currentUser?.email || 'anonymous',
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-        }
-
-        // Load canvas from Firebase
-        function loadCanvas() {
-            db.collection('canvas').onSnapshot((snapshot) => {
-                snapshot.docChanges().forEach((change) => {
-                    if (change.type === 'added' || change.type === 'modified') {
-                        const data = change.doc.data();
-                        const pixel = document.querySelector(`.pixel[data-index="${change.doc.id}"]`);
-                        if (pixel) {
-                            pixel.style.background = data.color;
-                        }
-                    }
-                });
-            });
-        }
-
-        // Color selection
-        colorOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                colorOptions.forEach(opt => opt.classList.remove('active'));
-                option.classList.add('active');
-                currentColor = option.dataset.color;
-            });
-        });
-
-        // Clear canvas
-        clearBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to clear the entire canvas?')) {
-                for (let i = 0; i < 400; i++) {
-                    db.collection('canvas').doc(i.toString()).delete();
-                }
+        // Art management
+        function saveArt() {
+            if (!currentRoom) {
+                showNotification('Please join a room first');
+                return;
             }
-        });
 
-        // Save artwork
-        saveBtn.addEventListener('click', () => {
-            alert('Artwork saved to cloud! Share with your friends! 🎉');
-        });
-
-        // User management
-        function setupUserSystem() {
-            // Anonymous authentication
-            auth.signInAnonymously().catch((error) => {
-                console.error('Auth error:', error);
-            });
-
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    currentUser = user;
-                    updateUserPresence();
-                }
-            });
-
-            // Listen for other users
-            db.collection('users').onSnapshot((snapshot) => {
-                users.clear();
-                userList.innerHTML = '';
-                
-                snapshot.forEach((doc) => {
-                    users.add(doc.id);
-                    if (doc.id !== currentUser?.uid) {
-                        const userBadge = document.createElement('div');
-                        userBadge.className = 'user-badge';
-                        userBadge.textContent = `User${doc.id.slice(-4)}`;
-                        userList.appendChild(userBadge);
-                    }
+            // Generate a random user ID for this session if not already set
+            const userId = localStorage.getItem('userId') || 'user_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('userId', userId);
+            
+            // Convert canvas to data URL
+            const dataURL = artCanvas.toDataURL('image/png');
+            
+            // Upload to Firebase Storage
+            const storageRef = storage.ref();
+            const artRef = storageRef.child(`art/${currentRoom.id}/${Date.now()}.png`);
+            
+            // Convert data URL to blob
+            fetch(dataURL)
+                .then(res => res.blob())
+                .then(blob => {
+                    return artRef.put(blob);
+                })
+                .then(snapshot => {
+                    return snapshot.ref.getDownloadURL();
+                })
+                .then(downloadURL => {
+                    // Save art metadata to Firestore
+                    return db.collection('artworks').add({
+                        roomId: currentRoom.id,
+                        imageUrl: downloadURL,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        createdBy: userId,
+                        roomName: currentRoom.name
+                    });
+                })
+                .then(() => {
+                    showNotification('Art saved successfully!');
+                    clearCanvas();
+                })
+                .catch((error) => {
+                    console.error('Error saving art: ', error);
+                    showNotification('Error saving art. Please try again.');
                 });
-                
-                // Add current user
-                const youBadge = document.createElement('div');
-                youBadge.className = 'user-badge';
-                youBadge.textContent = 'You';
-                userList.appendChild(youBadge);
-                
-                userCount.textContent = `Online: ${users.size}`;
-            });
         }
 
-        function updateUserPresence() {
-            if (!currentUser) return;
+        function loadRoomArt() {
+            if (!currentRoom) return;
             
-            const userRef = db.collection('users').doc(currentUser.uid);
-            userRef.set({
-                lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
-                email: currentUser.email || 'anonymous'
-            });
-            
-            // Remove user when they disconnect
-            userRef.onDisconnect().delete();
+            db.collection('artworks')
+                .where('roomId', '==', currentRoom.id)
+                .orderBy('createdAt', 'desc')
+                .onSnapshot((querySnapshot) => {
+                    artGallery.innerHTML = '';
+                    
+                    querySnapshot.forEach((doc) => {
+                        const art = doc.data();
+                        const artItem = document.createElement('div');
+                        artItem.className = 'art-item';
+                        artItem.innerHTML = `
+                            <img src="${art.imageUrl}" alt="Artwork">
+                            <div class="art-info">
+                                <div>Room: ${art.roomName}</div>
+                            </div>
+                        `;
+                        
+                        artGallery.appendChild(artItem);
+                    });
+                });
         }
 
-        // Meme templates
-        templates.forEach(template => {
-            template.addEventListener('click', () => {
-                const templateName = template.dataset.template;
-                loadMemeTemplate(templateName);
-            });
-        });
-
-        function loadMemeTemplate(template) {
-            // Simple template patterns (in a real app, these would be more complex)
-            const templates = {
-                doge: { colors: ['#ffd166', '#06d6a0', '#ef476f'], pattern: 'doge' },
-                pepe: { colors: ['#06d6a0', '#073b4c', '#ffffff'], pattern: 'pepe' },
-                stonks: { colors: ['#118ab2', '#ffd166', '#06d6a0'], pattern: 'stonks' },
-                wojak: { colors: ['#ffd166', '#073b4c', '#ef476f'], pattern: 'wojak' }
-            };
+        function listenForArtUpdates() {
+            if (!currentRoom) return;
             
-            alert(`Loading ${template} template! Start painting the meme! 🎨`);
-            // In a full implementation, this would apply actual pixel patterns
+            db.collection('artworks')
+                .where('roomId', '==', currentRoom.id)
+                .orderBy('createdAt', 'desc')
+                .onSnapshot((querySnapshot) => {
+                    // This will trigger whenever new art is added to the current room
+                    loadRoomArt();
+                });
         }
 
-        // Initialize everything when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeCanvas();
-            loadCanvas();
-            setupUserSystem();
+        // Utility functions
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.classList.add('show');
             
-            // Add some fun console messages
-            console.log('🎨 MemeMosaic loaded! Ready to create some amazing art!');
-            console.log('🚀 Features: Real-time collaboration, meme templates, live user tracking');
-        });
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize the app
+        init();
     </script>
 </body>
 </html>
