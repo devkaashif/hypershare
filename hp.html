@@ -177,10 +177,10 @@
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 10px;
             overflow: hidden;
+            background: white;
         }
 
         canvas {
-            background: white;
             display: block;
             cursor: crosshair;
         }
@@ -188,6 +188,7 @@
         #artCanvas {
             position: relative;
             z-index: 2;
+            background: transparent;
         }
 
         #remoteCanvas {
@@ -196,6 +197,17 @@
             left: 0;
             z-index: 1;
             pointer-events: none;
+            background: transparent;
+        }
+
+        .canvas-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 0;
         }
 
         .tools {
@@ -326,6 +338,14 @@
             font-size: 0.8rem;
         }
 
+        .debug-info {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
         @media (max-width: 768px) {
             .room-controls {
                 flex-direction: column;
@@ -367,6 +387,7 @@
                     <div>
                         <span>Current Room: <strong id="currentRoomName"></strong></span>
                         <div class="user-list" id="userList"></div>
+                        <div class="debug-info" id="debugInfo"></div>
                     </div>
                     <div>
                         <button id="deleteRoomBtn" class="delete-room">Delete Room</button>
@@ -383,8 +404,9 @@
                 <h2 class="section-title">Create Art</h2>
                 <div class="art-canvas-container">
                     <div class="canvas-wrapper">
-                        <canvas id="artCanvas" width="800" height="500"></canvas>
+                        <div class="canvas-background"></div>
                         <canvas id="remoteCanvas" width="800" height="500"></canvas>
+                        <canvas id="artCanvas" width="800" height="500"></canvas>
                     </div>
                     <div class="tools">
                         <div class="tool-btn active" data-tool="pencil" title="Pencil">✏️</div>
@@ -395,7 +417,7 @@
                             <input type="range" id="brushSize" min="1" max="50" value="5">
                             <span id="brushSizeValue">5</span>
                         </div>
-                        <button id="clearCanvasBtn">Clear</button>
+                        <button id="clearCanvasBtn">Clear All</button>
                         <button id="saveArtBtn">Save Art</button>
                     </div>
                 </div>
@@ -436,6 +458,7 @@
         const currentRoomInfo = document.getElementById('currentRoomInfo');
         const currentRoomName = document.getElementById('currentRoomName');
         const userList = document.getElementById('userList');
+        const debugInfo = document.getElementById('debugInfo');
         const roomList = document.getElementById('roomList');
         const artCanvas = document.getElementById('artCanvas');
         const remoteCanvas = document.getElementById('remoteCanvas');
@@ -462,6 +485,7 @@
         let currentBrushSize = 5;
         let userId = localStorage.getItem('userId') || 'user_' + Math.random().toString(36).substr(2, 9);
         let roomUsers = {};
+        let userPaths = {}; // Track drawing paths for each user
 
         // Initialize
         function init() {
@@ -472,6 +496,7 @@
             
             // Show welcome message
             showNotification('Welcome! Create or join a room to start drawing.');
+            updateDebugInfo('Ready to connect');
         }
 
         // Set up event listeners
@@ -499,17 +524,10 @@
                     toolButtons.forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
                     currentTool = button.dataset.tool;
-                    
-                    // Update cursor based on tool
-                    if (currentTool === 'eraser') {
-                        artCanvas.style.cursor = 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect x="8" y="8" width="16" height="16" fill="white" stroke="black" stroke-width="1"/></svg>\') 8 8, auto';
-                    } else {
-                        artCanvas.style.cursor = 'crosshair';
-                    }
                 });
             });
 
-            // Canvas events - FIXED: Proper event handling for drawing
+            // Canvas events
             artCanvas.addEventListener('mousedown', startDrawing);
             artCanvas.addEventListener('mousemove', draw);
             artCanvas.addEventListener('mouseup', stopDrawing);
@@ -524,19 +542,22 @@
             artCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
         }
 
-        // Setup canvas - FIXED: Proper canvas initialization
+        // Setup canvas
         function setupCanvas() {
             // Set canvas dimensions
-            artCanvas.width = 800;
-            artCanvas.height = 500;
-            remoteCanvas.width = 800;
-            remoteCanvas.height = 500;
+            const width = 800;
+            const height = 500;
             
-            // Set initial canvas background
+            artCanvas.width = width;
+            artCanvas.height = height;
+            remoteCanvas.width = width;
+            remoteCanvas.height = height;
+            
+            // Clear both canvases
             ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, artCanvas.width, artCanvas.height);
+            ctx.fillRect(0, 0, width, height);
             remoteCtx.fillStyle = 'white';
-            remoteCtx.fillRect(0, 0, remoteCanvas.width, remoteCanvas.height);
+            remoteCtx.fillRect(0, 0, width, height);
             
             // Set drawing styles
             ctx.lineJoin = 'round';
@@ -547,9 +568,11 @@
             remoteCtx.lineJoin = 'round';
             remoteCtx.lineCap = 'round';
             remoteCtx.lineWidth = 5;
+            
+            updateDebugInfo('Canvas initialized');
         }
 
-        // Drawing functions - FIXED: Improved drawing logic
+        // Drawing functions
         function startDrawing(e) {
             if (!currentRoom) {
                 showNotification('Please join a room first to start drawing', 'error');
@@ -561,11 +584,14 @@
             lastX = coords.x;
             lastY = coords.y;
             
+            // Start a new path
             ctx.beginPath();
             ctx.moveTo(lastX, lastY);
             
             // Send drawing start to other users
             sendDrawingData('start', lastX, lastY);
+            
+            updateDebugInfo(`Drawing started at ${lastX.toFixed(1)}, ${lastY.toFixed(1)}`);
         }
 
         function draw(e) {
@@ -582,6 +608,7 @@
                 ctx.strokeStyle = 'white';
             }
             
+            // Draw line
             ctx.lineTo(x, y);
             ctx.stroke();
             
@@ -600,29 +627,27 @@
             
             // Send drawing stop to other users
             sendDrawingData('stop');
+            
+            updateDebugInfo('Drawing stopped');
         }
 
-        // FIXED: Better coordinate calculation
         function getCoordinates(e) {
             const rect = artCanvas.getBoundingClientRect();
-            let x, y;
+            let clientX, clientY;
             
             if (e.type.includes('touch')) {
-                x = e.touches[0].clientX - rect.left;
-                y = e.touches[0].clientY - rect.top;
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
             } else {
-                x = e.clientX - rect.left;
-                y = e.clientY - rect.top;
+                clientX = e.clientX;
+                clientY = e.clientY;
             }
             
-            // Scale coordinates based on canvas size vs display size
-            const scaleX = artCanvas.width / rect.width;
-            const scaleY = artCanvas.height / rect.height;
+            // Calculate coordinates relative to canvas
+            const x = (clientX - rect.left) * (artCanvas.width / rect.width);
+            const y = (clientY - rect.top) * (artCanvas.height / rect.height);
             
-            return {
-                x: x * scaleX,
-                y: y * scaleY
-            };
+            return { x, y };
         }
 
         function handleTouchStart(e) {
@@ -641,17 +666,21 @@
                 return;
             }
             
+            // Clear both canvases
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, artCanvas.width, artCanvas.height);
             
-            // Clear remote canvas as well
             remoteCtx.fillStyle = 'white';
             remoteCtx.fillRect(0, 0, remoteCanvas.width, remoteCanvas.height);
+            
+            // Reset user paths
+            userPaths = {};
             
             // Send clear command to other users
             sendDrawingData('clear');
             
             showNotification('Canvas cleared');
+            updateDebugInfo('Canvas cleared');
         }
 
         // Send drawing data to Firestore for real-time sharing
@@ -662,8 +691,8 @@
                 roomId: currentRoom.id,
                 userId: userId,
                 action: action,
-                x: x,
-                y: y,
+                x: x || 0,
+                y: y || 0,
                 tool: currentTool,
                 color: currentColor,
                 brushSize: currentBrushSize,
@@ -671,14 +700,20 @@
             };
             
             db.collection('drawings').add(drawingData)
+                .then(() => {
+                    updateDebugInfo(`Sent: ${action} at ${x?.toFixed(1) || 'N/A'}, ${y?.toFixed(1) || 'N/A'}`);
+                })
                 .catch((error) => {
                     console.error('Error sending drawing data: ', error);
+                    updateDebugInfo('Error sending drawing data');
                 });
         }
 
         // Listen for drawing data from other users
         function listenForDrawings() {
             if (!currentRoom) return;
+            
+            updateDebugInfo('Listening for drawings...');
             
             db.collection('drawings')
                 .where('roomId', '==', currentRoom.id)
@@ -687,50 +722,85 @@
                     querySnapshot.docChanges().forEach((change) => {
                         if (change.type === 'added') {
                             const drawing = change.doc.data();
+                            const drawingId = change.doc.id;
                             
                             // Don't process our own drawings
-                            if (drawing.userId === userId) return;
+                            if (drawing.userId === userId) {
+                                updateDebugInfo('Received own drawing - ignoring');
+                                return;
+                            }
                             
-                            processRemoteDrawing(drawing);
+                            updateDebugInfo(`Received: ${drawing.action} from user ${drawing.userId.substring(0, 8)}`);
+                            processRemoteDrawing(drawing, drawingId);
                         }
                     });
+                }, (error) => {
+                    console.error('Error listening for drawings:', error);
+                    updateDebugInfo('Error listening for drawings');
                 });
         }
 
         // Process drawing data from other users
-        function processRemoteDrawing(drawing) {
-            const { action, x, y, tool, color, brushSize } = drawing;
+        function processRemoteDrawing(drawing, drawingId) {
+            const { action, x, y, tool, color, brushSize, userId: remoteUserId } = drawing;
             
+            // Initialize path for this user if it doesn't exist
+            if (!userPaths[remoteUserId]) {
+                userPaths[remoteUserId] = {
+                    lastX: 0,
+                    lastY: 0,
+                    isDrawing: false
+                };
+            }
+            
+            const userPath = userPaths[remoteUserId];
             remoteCtx.lineWidth = brushSize || 5;
             
             if (action === 'start') {
+                userPath.isDrawing = true;
+                userPath.lastX = x;
+                userPath.lastY = y;
+                
                 remoteCtx.beginPath();
                 remoteCtx.moveTo(x, y);
-            } else if (action === 'draw') {
-                remoteCtx.lineTo(x, y);
                 
+                // Set color based on tool
                 if (tool === 'pencil') {
                     remoteCtx.strokeStyle = color || '#000000';
                 } else if (tool === 'eraser') {
                     remoteCtx.strokeStyle = 'white';
                 }
                 
+            } else if (action === 'draw' && userPath.isDrawing) {
+                remoteCtx.lineTo(x, y);
                 remoteCtx.stroke();
+                
+                userPath.lastX = x;
+                userPath.lastY = y;
+                
             } else if (action === 'stop') {
+                userPath.isDrawing = false;
                 remoteCtx.closePath();
+                
             } else if (action === 'clear') {
+                // Clear only the remote canvas (other users' drawings)
                 remoteCtx.fillStyle = 'white';
                 remoteCtx.fillRect(0, 0, remoteCanvas.width, remoteCanvas.height);
+                
+                // Reset all user paths
+                userPaths = {};
             }
         }
 
-        // Room management functions (same as before)
+        // Room management functions
         function createRoom() {
             const roomName = roomNameInput.value.trim();
             if (!roomName) {
                 showNotification('Please enter a room name', 'error');
                 return;
             }
+            
+            updateDebugInfo('Creating room...');
             
             db.collection('rooms').add({
                 name: roomName,
@@ -759,10 +829,13 @@
                 
                 // Set up user presence
                 setupUserPresence();
+                
+                updateDebugInfo(`Room created: ${roomName}`);
             })
             .catch((error) => {
                 console.error('Error creating room: ', error);
                 showNotification('Error creating room. Please try again.', 'error');
+                updateDebugInfo('Error creating room');
             });
         }
 
@@ -773,12 +846,15 @@
                 return;
             }
 
+            updateDebugInfo(`Joining room: ${roomName}`);
+
             db.collection('rooms')
                 .where('name', '==', roomName)
                 .get()
                 .then((querySnapshot) => {
                     if (querySnapshot.empty) {
                         showNotification('Room not found', 'error');
+                        updateDebugInfo('Room not found');
                         return;
                     }
 
@@ -792,7 +868,7 @@
                         lastActive: firebase.firestore.FieldValue.serverTimestamp()
                     };
                     
-                    db.collection('rooms').doc(roomDoc.id).update({
+                    return db.collection('rooms').doc(roomDoc.id).update({
                         userCount: Object.keys(users).length,
                         users: users
                     })
@@ -813,16 +889,21 @@
                         
                         // Set up user presence
                         setupUserPresence();
+                        
+                        updateDebugInfo(`Successfully joined: ${roomName}`);
                     });
                 })
                 .catch((error) => {
                     console.error('Error joining room: ', error);
                     showNotification('Error joining room. Please try again.', 'error');
+                    updateDebugInfo('Error joining room');
                 });
         }
 
         function leaveRoom() {
             if (!currentRoom) return;
+            
+            updateDebugInfo('Leaving room...');
             
             // Remove user from room's users object
             db.collection('rooms').doc(currentRoom.id).get()
@@ -849,9 +930,13 @@
                     // Clear the gallery when leaving a room
                     artGallery.innerHTML = '';
                     userList.innerHTML = '';
+                    userPaths = {};
+                    
+                    updateDebugInfo('Left room successfully');
                 })
                 .catch((error) => {
                     console.error('Error leaving room: ', error);
+                    updateDebugInfo('Error leaving room');
                 });
         }
 
@@ -861,6 +946,8 @@
             if (!confirm(`Are you sure you want to delete the room "${currentRoom.name}"? This will also delete all artworks in this room.`)) {
                 return;
             }
+            
+            updateDebugInfo('Deleting room...');
             
             // Delete all artworks in this room first
             db.collection('artworks')
@@ -904,10 +991,14 @@
                     updateRoomUI();
                     artGallery.innerHTML = '';
                     userList.innerHTML = '';
+                    userPaths = {};
+                    
+                    updateDebugInfo('Room deleted successfully');
                 })
                 .catch((error) => {
                     console.error('Error deleting room: ', error);
                     showNotification('Error deleting room. Please try again.', 'error');
+                    updateDebugInfo('Error deleting room');
                 });
         }
 
@@ -953,6 +1044,9 @@
         }
 
         function deleteRoomById(roomId, roomName) {
+            // Similar to deleteRoom function but for any room
+            updateDebugInfo(`Deleting room: ${roomName}`);
+            
             // Delete all artworks in this room first
             db.collection('artworks')
                 .where('roomId', '==', roomId)
@@ -997,11 +1091,14 @@
                         updateRoomUI();
                         artGallery.innerHTML = '';
                         userList.innerHTML = '';
+                        userPaths = {};
                     }
+                    updateDebugInfo(`Room ${roomName} deleted`);
                 })
                 .catch((error) => {
                     console.error('Error deleting room: ', error);
                     showNotification('Error deleting room. Please try again.', 'error');
+                    updateDebugInfo('Error deleting room');
                 });
         }
 
@@ -1056,6 +1153,11 @@
             }
         }
 
+        function updateDebugInfo(message) {
+            debugInfo.textContent = `Debug: ${message} | User: ${userId.substring(0, 8)}`;
+            console.log(`Debug: ${message}`);
+        }
+
         // Art management
         function saveArt() {
             if (!currentRoom) {
@@ -1063,27 +1165,27 @@
                 return;
             }
 
-            // Combine both canvases (local and remote) into one image
-            const combinedCanvas = document.createElement('canvas');
-            combinedCanvas.width = artCanvas.width;
-            combinedCanvas.height = artCanvas.height;
-            const combinedCtx = combinedCanvas.getContext('2d');
+            // Create a temporary canvas to combine both canvases
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = artCanvas.width;
+            tempCanvas.height = artCanvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
             
             // Draw white background
-            combinedCtx.fillStyle = 'white';
-            combinedCtx.fillRect(0, 0, combinedCanvas.width, combinedCanvas.height);
+            tempCtx.fillStyle = 'white';
+            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
             
             // Draw remote canvas first (other users' drawings)
-            combinedCtx.drawImage(remoteCanvas, 0, 0);
+            tempCtx.drawImage(remoteCanvas, 0, 0);
             // Draw local canvas on top (your drawings)
-            combinedCtx.drawImage(artCanvas, 0, 0);
+            tempCtx.drawImage(artCanvas, 0, 0);
             
             // Convert canvas to data URL
-            const dataURL = combinedCanvas.toDataURL('image/png');
+            const dataURL = tempCanvas.toDataURL('image/png');
             
             // Upload to Firebase Storage
             const storageRef = storage.ref();
-            const artRef = storageRef.child(`art/${currentRoom.id}/${Date.now()}.png`);
+            const artRef = storageRef.child(`art/${currentRoom.id}/${Date.now()}-${userId}.png`);
             
             // Convert data URL to blob
             fetch(dataURL)
@@ -1106,10 +1208,12 @@
                 })
                 .then(() => {
                     showNotification('Art saved successfully!');
+                    updateDebugInfo('Art saved to gallery');
                 })
                 .catch((error) => {
                     console.error('Error saving art: ', error);
                     showNotification('Error saving art. Please try again.', 'error');
+                    updateDebugInfo('Error saving art');
                 });
         }
 
@@ -1127,7 +1231,7 @@
                         const artItem = document.createElement('div');
                         artItem.className = 'art-item';
                         artItem.innerHTML = `
-                            <img src="${art.imageUrl}" alt="Artwork">
+                            <img src="${art.imageUrl}" alt="Artwork" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIEVycm9yPC90ZXh0Pjwvc3ZnPg=='">
                             <div class="art-info">
                                 <div>Room: ${art.roomName}</div>
                                 <div>By: ${art.createdBy ? art.createdBy.substring(0, 8) : 'Unknown'}</div>
