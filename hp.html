@@ -174,20 +174,27 @@
         .canvas-wrapper {
             position: relative;
             display: inline-block;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
         }
 
         canvas {
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            display: block;
             cursor: crosshair;
-            max-width: 100%;
+        }
+
+        #artCanvas {
+            position: relative;
+            z-index: 2;
         }
 
         #remoteCanvas {
             position: absolute;
             top: 0;
             left: 0;
+            z-index: 1;
             pointer-events: none;
         }
 
@@ -197,29 +204,34 @@
             flex-wrap: wrap;
             justify-content: center;
             align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
         }
 
         .tool-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: rgba(255, 255, 255, 0.2);
             cursor: pointer;
             transition: all 0.2s ease;
+            font-size: 1.2rem;
         }
 
         .tool-btn.active {
             background: #ff6b6b;
+            transform: scale(1.1);
         }
 
         .color-picker {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border: none;
-            border-radius: 50%;
+            border-radius: 10px;
             overflow: hidden;
             cursor: pointer;
         }
@@ -228,6 +240,9 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 15px;
+            border-radius: 10px;
         }
 
         .art-gallery {
@@ -320,9 +335,14 @@
                 width: 100%;
             }
             
+            .canvas-wrapper {
+                width: 100%;
+            }
+            
             canvas {
                 width: 100%;
                 height: auto;
+                max-width: 100%;
             }
         }
     </style>
@@ -373,6 +393,7 @@
                         <div class="brush-size">
                             <span>Size:</span>
                             <input type="range" id="brushSize" min="1" max="50" value="5">
+                            <span id="brushSizeValue">5</span>
                         </div>
                         <button id="clearCanvasBtn">Clear</button>
                         <button id="saveArtBtn">Save Art</button>
@@ -422,6 +443,7 @@
         const saveArtBtn = document.getElementById('saveArtBtn');
         const colorPicker = document.getElementById('colorPicker');
         const brushSize = document.getElementById('brushSize');
+        const brushSizeValue = document.getElementById('brushSizeValue');
         const toolButtons = document.querySelectorAll('.tool-btn');
         const artGallery = document.getElementById('artGallery');
         const notification = document.getElementById('notification');
@@ -429,12 +451,6 @@
         // Canvas contexts
         const ctx = artCanvas.getContext('2d');
         const remoteCtx = remoteCanvas.getContext('2d');
-        ctx.lineJoin = 'round';
-        ctx.lineCap = 'round';
-        ctx.lineWidth = 5;
-        remoteCtx.lineJoin = 'round';
-        remoteCtx.lineCap = 'round';
-        remoteCtx.lineWidth = 5;
 
         // App state
         let currentRoom = null;
@@ -453,6 +469,9 @@
             loadRooms();
             setupCanvas();
             setupEventListeners();
+            
+            // Show welcome message
+            showNotification('Welcome! Create or join a room to start drawing.');
         }
 
         // Set up event listeners
@@ -463,12 +482,15 @@
             deleteRoomBtn.addEventListener('click', deleteRoom);
             clearCanvasBtn.addEventListener('click', clearCanvas);
             saveArtBtn.addEventListener('click', saveArt);
+            
             colorPicker.addEventListener('change', (e) => {
                 currentColor = e.target.value;
             });
+            
             brushSize.addEventListener('input', (e) => {
                 currentBrushSize = parseInt(e.target.value);
                 ctx.lineWidth = currentBrushSize;
+                brushSizeValue.textContent = currentBrushSize;
             });
 
             // Tool selection
@@ -477,36 +499,70 @@
                     toolButtons.forEach(btn => btn.classList.remove('active'));
                     button.classList.add('active');
                     currentTool = button.dataset.tool;
+                    
+                    // Update cursor based on tool
+                    if (currentTool === 'eraser') {
+                        artCanvas.style.cursor = 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><rect x="8" y="8" width="16" height="16" fill="white" stroke="black" stroke-width="1"/></svg>\') 8 8, auto';
+                    } else {
+                        artCanvas.style.cursor = 'crosshair';
+                    }
                 });
             });
 
-            // Canvas events
+            // Canvas events - FIXED: Proper event handling for drawing
             artCanvas.addEventListener('mousedown', startDrawing);
             artCanvas.addEventListener('mousemove', draw);
             artCanvas.addEventListener('mouseup', stopDrawing);
             artCanvas.addEventListener('mouseout', stopDrawing);
 
             // Touch events for mobile
-            artCanvas.addEventListener('touchstart', handleTouchStart);
-            artCanvas.addEventListener('touchmove', handleTouchMove);
+            artCanvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+            artCanvas.addEventListener('touchmove', handleTouchMove, { passive: false });
             artCanvas.addEventListener('touchend', stopDrawing);
+
+            // Prevent context menu on canvas
+            artCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
         }
 
-        // Setup canvas
+        // Setup canvas - FIXED: Proper canvas initialization
         function setupCanvas() {
+            // Set canvas dimensions
+            artCanvas.width = 800;
+            artCanvas.height = 500;
+            remoteCanvas.width = 800;
+            remoteCanvas.height = 500;
+            
             // Set initial canvas background
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, artCanvas.width, artCanvas.height);
             remoteCtx.fillStyle = 'white';
             remoteCtx.fillRect(0, 0, remoteCanvas.width, remoteCanvas.height);
+            
+            // Set drawing styles
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.lineWidth = currentBrushSize;
+            ctx.strokeStyle = currentColor;
+            
+            remoteCtx.lineJoin = 'round';
+            remoteCtx.lineCap = 'round';
+            remoteCtx.lineWidth = 5;
         }
 
-        // Drawing functions
+        // Drawing functions - FIXED: Improved drawing logic
         function startDrawing(e) {
-            if (!currentRoom) return;
+            if (!currentRoom) {
+                showNotification('Please join a room first to start drawing', 'error');
+                return;
+            }
             
             isDrawing = true;
-            [lastX, lastY] = getCoordinates(e);
+            const coords = getCoordinates(e);
+            lastX = coords.x;
+            lastY = coords.y;
+            
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
             
             // Send drawing start to other users
             sendDrawingData('start', lastX, lastY);
@@ -515,45 +571,58 @@
         function draw(e) {
             if (!isDrawing || !currentRoom) return;
             
-            const [x, y] = getCoordinates(e);
+            const coords = getCoordinates(e);
+            const x = coords.x;
+            const y = coords.y;
             
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(x, y);
-            
+            // Set drawing style based on tool
             if (currentTool === 'pencil') {
                 ctx.strokeStyle = currentColor;
-                ctx.stroke();
             } else if (currentTool === 'eraser') {
                 ctx.strokeStyle = 'white';
-                ctx.stroke();
             }
+            
+            ctx.lineTo(x, y);
+            ctx.stroke();
             
             // Send drawing data to other users
             sendDrawingData('draw', x, y);
             
-            [lastX, lastY] = [x, y];
+            lastX = x;
+            lastY = y;
         }
 
         function stopDrawing() {
-            if (!isDrawing || !currentRoom) return;
+            if (!isDrawing) return;
             
             isDrawing = false;
+            ctx.closePath();
+            
+            // Send drawing stop to other users
             sendDrawingData('stop');
         }
 
+        // FIXED: Better coordinate calculation
         function getCoordinates(e) {
+            const rect = artCanvas.getBoundingClientRect();
             let x, y;
             
             if (e.type.includes('touch')) {
-                x = e.touches[0].clientX - artCanvas.getBoundingClientRect().left;
-                y = e.touches[0].clientY - artCanvas.getBoundingClientRect().top;
+                x = e.touches[0].clientX - rect.left;
+                y = e.touches[0].clientY - rect.top;
             } else {
-                x = e.offsetX;
-                y = e.offsetY;
+                x = e.clientX - rect.left;
+                y = e.clientY - rect.top;
             }
             
-            return [x, y];
+            // Scale coordinates based on canvas size vs display size
+            const scaleX = artCanvas.width / rect.width;
+            const scaleY = artCanvas.height / rect.height;
+            
+            return {
+                x: x * scaleX,
+                y: y * scaleY
+            };
         }
 
         function handleTouchStart(e) {
@@ -567,7 +636,10 @@
         }
 
         function clearCanvas() {
-            if (!currentRoom) return;
+            if (!currentRoom) {
+                showNotification('Please join a room first', 'error');
+                return;
+            }
             
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, artCanvas.width, artCanvas.height);
@@ -578,6 +650,8 @@
             
             // Send clear command to other users
             sendDrawingData('clear');
+            
+            showNotification('Canvas cleared');
         }
 
         // Send drawing data to Firestore for real-time sharing
@@ -643,14 +717,14 @@
                 
                 remoteCtx.stroke();
             } else if (action === 'stop') {
-                // Nothing needed for stop action
+                remoteCtx.closePath();
             } else if (action === 'clear') {
                 remoteCtx.fillStyle = 'white';
                 remoteCtx.fillRect(0, 0, remoteCanvas.width, remoteCanvas.height);
             }
         }
 
-        // Room management
+        // Room management functions (same as before)
         function createRoom() {
             const roomName = roomNameInput.value.trim();
             if (!roomName) {
@@ -971,8 +1045,14 @@
             if (currentRoom) {
                 currentRoomName.textContent = currentRoom.name;
                 currentRoomInfo.style.display = 'flex';
+                
+                // Enable drawing tools
+                artCanvas.style.pointerEvents = 'auto';
             } else {
                 currentRoomInfo.style.display = 'none';
+                
+                // Disable drawing tools
+                artCanvas.style.pointerEvents = 'none';
             }
         }
 
@@ -989,10 +1069,14 @@
             combinedCanvas.height = artCanvas.height;
             const combinedCtx = combinedCanvas.getContext('2d');
             
-            // Draw local canvas
-            combinedCtx.drawImage(artCanvas, 0, 0);
-            // Draw remote canvas on top
+            // Draw white background
+            combinedCtx.fillStyle = 'white';
+            combinedCtx.fillRect(0, 0, combinedCanvas.width, combinedCanvas.height);
+            
+            // Draw remote canvas first (other users' drawings)
             combinedCtx.drawImage(remoteCanvas, 0, 0);
+            // Draw local canvas on top (your drawings)
+            combinedCtx.drawImage(artCanvas, 0, 0);
             
             // Convert canvas to data URL
             const dataURL = combinedCanvas.toDataURL('image/png');
@@ -1022,7 +1106,6 @@
                 })
                 .then(() => {
                     showNotification('Art saved successfully!');
-                    clearCanvas();
                 })
                 .catch((error) => {
                     console.error('Error saving art: ', error);
