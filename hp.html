@@ -171,12 +171,24 @@
             gap: 20px;
         }
 
+        .canvas-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
         canvas {
             background: white;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             cursor: crosshair;
             max-width: 100%;
+        }
+
+        #remoteCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
         }
 
         .tools {
@@ -285,6 +297,20 @@
             background: #dc3545;
         }
 
+        .user-list {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .user-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
         @media (max-width: 768px) {
             .room-controls {
                 flex-direction: column;
@@ -318,7 +344,10 @@
                 </div>
                 
                 <div id="currentRoomInfo" class="current-room" style="display: none;">
-                    <span>Current Room: <strong id="currentRoomName"></strong></span>
+                    <div>
+                        <span>Current Room: <strong id="currentRoomName"></strong></span>
+                        <div class="user-list" id="userList"></div>
+                    </div>
                     <div>
                         <button id="deleteRoomBtn" class="delete-room">Delete Room</button>
                         <button id="leaveRoomBtn" class="leave-room">Leave Room</button>
@@ -333,7 +362,10 @@
             <section class="art-section">
                 <h2 class="section-title">Create Art</h2>
                 <div class="art-canvas-container">
-                    <canvas id="artCanvas" width="800" height="500"></canvas>
+                    <div class="canvas-wrapper">
+                        <canvas id="artCanvas" width="800" height="500"></canvas>
+                        <canvas id="remoteCanvas" width="800" height="500"></canvas>
+                    </div>
                     <div class="tools">
                         <div class="tool-btn active" data-tool="pencil" title="Pencil">✏️</div>
                         <div class="tool-btn" data-tool="eraser" title="Eraser">🧽</div>
@@ -382,8 +414,10 @@
         const deleteRoomBtn = document.getElementById('deleteRoomBtn');
         const currentRoomInfo = document.getElementById('currentRoomInfo');
         const currentRoomName = document.getElementById('currentRoomName');
+        const userList = document.getElementById('userList');
         const roomList = document.getElementById('roomList');
         const artCanvas = document.getElementById('artCanvas');
+        const remoteCanvas = document.getElementById('remoteCanvas');
         const clearCanvasBtn = document.getElementById('clearCanvasBtn');
         const saveArtBtn = document.getElementById('saveArtBtn');
         const colorPicker = document.getElementById('colorPicker');
@@ -392,11 +426,15 @@
         const artGallery = document.getElementById('artGallery');
         const notification = document.getElementById('notification');
 
-        // Canvas context
+        // Canvas contexts
         const ctx = artCanvas.getContext('2d');
+        const remoteCtx = remoteCanvas.getContext('2d');
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
         ctx.lineWidth = 5;
+        remoteCtx.lineJoin = 'round';
+        remoteCtx.lineCap = 'round';
+        remoteCtx.lineWidth = 5;
 
         // App state
         let currentRoom = null;
@@ -406,9 +444,12 @@
         let currentTool = 'pencil';
         let currentColor = '#000000';
         let currentBrushSize = 5;
+        let userId = localStorage.getItem('userId') || 'user_' + Math.random().toString(36).substr(2, 9);
+        let roomUsers = {};
 
         // Initialize
         function init() {
+            localStorage.setItem('userId', userId);
             loadRooms();
             setupCanvas();
             setupEventListeners();
@@ -456,16 +497,23 @@
             // Set initial canvas background
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, artCanvas.width, artCanvas.height);
+            remoteCtx.fillStyle = 'white';
+            remoteCtx.fillRect(0, 0, remoteCanvas.width, remoteCanvas.height);
         }
 
         // Drawing functions
         function startDrawing(e) {
+            if (!currentRoom) return;
+            
             isDrawing = true;
             [lastX, lastY] = getCoordinates(e);
+            
+            // Send drawing start to other users
+            sendDrawingData('start', lastX, lastY);
         }
 
         function draw(e) {
-            if (!isDrawing) return;
+            if (!isDrawing || !currentRoom) return;
             
             const [x, y] = getCoordinates(e);
             
@@ -481,11 +529,17 @@
                 ctx.stroke();
             }
             
+            // Send drawing data to other users
+            sendDrawingData('draw', x, y);
+            
             [lastX, lastY] = [x, y];
         }
 
         function stopDrawing() {
+            if (!isDrawing || !currentRoom) return;
+            
             isDrawing = false;
+            sendDrawingData('stop');
         }
 
         function getCoordinates(e) {
@@ -513,8 +567,87 @@
         }
 
         function clearCanvas() {
+            if (!currentRoom) return;
+            
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, artCanvas.width, artCanvas.height);
+            
+            // Clear remote canvas as well
+            remoteCtx.fillStyle = 'white';
+            remoteCtx.fillRect(0, 0, remoteCanvas.width, remoteCanvas.height);
+            
+            // Send clear command to other users
+            sendDrawingData('clear');
+        }
+
+        // Send drawing data to Firestore for real-time sharing
+        function sendDrawingData(action, x, y) {
+            if (!currentRoom) return;
+            
+            const drawingData = {
+                roomId: currentRoom.id,
+                userId: userId,
+                action: action,
+                x: x,
+                y: y,
+                tool: currentTool,
+                color: currentColor,
+                brushSize: currentBrushSize,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            db.collection('drawings').add(drawingData)
+                .catch((error) => {
+                    console.error('Error sending drawing data: ', error);
+                });
+        }
+
+        // Listen for drawing data from other users
+        function listenForDrawings() {
+            if (!currentRoom) return;
+            
+            db.collection('drawings')
+                .where('roomId', '==', currentRoom.id)
+                .orderBy('timestamp', 'asc')
+                .onSnapshot((querySnapshot) => {
+                    querySnapshot.docChanges().forEach((change) => {
+                        if (change.type === 'added') {
+                            const drawing = change.doc.data();
+                            
+                            // Don't process our own drawings
+                            if (drawing.userId === userId) return;
+                            
+                            processRemoteDrawing(drawing);
+                        }
+                    });
+                });
+        }
+
+        // Process drawing data from other users
+        function processRemoteDrawing(drawing) {
+            const { action, x, y, tool, color, brushSize } = drawing;
+            
+            remoteCtx.lineWidth = brushSize || 5;
+            
+            if (action === 'start') {
+                remoteCtx.beginPath();
+                remoteCtx.moveTo(x, y);
+            } else if (action === 'draw') {
+                remoteCtx.lineTo(x, y);
+                
+                if (tool === 'pencil') {
+                    remoteCtx.strokeStyle = color || '#000000';
+                } else if (tool === 'eraser') {
+                    remoteCtx.strokeStyle = 'white';
+                }
+                
+                remoteCtx.stroke();
+            } else if (action === 'stop') {
+                // Nothing needed for stop action
+            } else if (action === 'clear') {
+                remoteCtx.fillStyle = 'white';
+                remoteCtx.fillRect(0, 0, remoteCanvas.width, remoteCanvas.height);
+            }
         }
 
         // Room management
@@ -524,15 +657,18 @@
                 showNotification('Please enter a room name', 'error');
                 return;
             }
-
-            // Generate a random user ID for this session
-            const userId = 'user_' + Math.random().toString(36).substr(2, 9);
             
             db.collection('rooms').add({
                 name: roomName,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                 createdBy: userId,
-                userCount: 1
+                userCount: 1,
+                users: {
+                    [userId]: {
+                        joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastActive: firebase.firestore.FieldValue.serverTimestamp()
+                    }
+                }
             })
             .then((docRef) => {
                 currentRoom = {
@@ -543,8 +679,12 @@
                 showNotification(`Room "${roomName}" created successfully!`);
                 roomNameInput.value = '';
                 
-                // Listen for art updates in this room
+                // Listen for drawings and art updates in this room
+                listenForDrawings();
                 listenForArtUpdates();
+                
+                // Set up user presence
+                setupUserPresence();
             })
             .catch((error) => {
                 console.error('Error creating room: ', error);
@@ -569,23 +709,37 @@
                     }
 
                     const roomDoc = querySnapshot.docs[0];
-                    currentRoom = {
-                        id: roomDoc.id,
-                        name: roomDoc.data().name
+                    const roomData = roomDoc.data();
+                    
+                    // Update user count and add user to users object
+                    const users = roomData.users || {};
+                    users[userId] = {
+                        joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastActive: firebase.firestore.FieldValue.serverTimestamp()
                     };
                     
-                    // Update user count
                     db.collection('rooms').doc(roomDoc.id).update({
-                        userCount: firebase.firestore.FieldValue.increment(1)
+                        userCount: Object.keys(users).length,
+                        users: users
+                    })
+                    .then(() => {
+                        currentRoom = {
+                            id: roomDoc.id,
+                            name: roomData.name
+                        };
+                        
+                        updateRoomUI();
+                        showNotification(`Joined room "${roomName}"!`);
+                        roomNameInput.value = '';
+                        
+                        // Listen for drawings and art updates in this room
+                        listenForDrawings();
+                        listenForArtUpdates();
+                        loadRoomArt();
+                        
+                        // Set up user presence
+                        setupUserPresence();
                     });
-                    
-                    updateRoomUI();
-                    showNotification(`Joined room "${roomName}"!`);
-                    roomNameInput.value = '';
-                    
-                    // Listen for art updates in this room
-                    listenForArtUpdates();
-                    loadRoomArt();
                 })
                 .catch((error) => {
                     console.error('Error joining room: ', error);
@@ -596,17 +750,35 @@
         function leaveRoom() {
             if (!currentRoom) return;
             
-            // Decrement user count
-            db.collection('rooms').doc(currentRoom.id).update({
-                userCount: firebase.firestore.FieldValue.increment(-1)
-            });
-            
-            currentRoom = null;
-            updateRoomUI();
-            showNotification('Left the room');
-            
-            // Clear the gallery when leaving a room
-            artGallery.innerHTML = '';
+            // Remove user from room's users object
+            db.collection('rooms').doc(currentRoom.id).get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const roomData = doc.data();
+                        const users = roomData.users || {};
+                        
+                        if (users[userId]) {
+                            delete users[userId];
+                            
+                            return db.collection('rooms').doc(currentRoom.id).update({
+                                userCount: Object.keys(users).length,
+                                users: users
+                            });
+                        }
+                    }
+                })
+                .then(() => {
+                    currentRoom = null;
+                    updateRoomUI();
+                    showNotification('Left the room');
+                    
+                    // Clear the gallery when leaving a room
+                    artGallery.innerHTML = '';
+                    userList.innerHTML = '';
+                })
+                .catch((error) => {
+                    console.error('Error leaving room: ', error);
+                });
         }
 
         function deleteRoom() {
@@ -635,7 +807,18 @@
                         deletePromises.push(doc.ref.delete());
                     });
                     
-                    return Promise.all(deletePromises);
+                    // Delete all drawings for this room
+                    return Promise.all([
+                        ...deletePromises,
+                        db.collection('drawings').where('roomId', '==', currentRoom.id).get()
+                            .then(snapshot => {
+                                const drawingDeletes = [];
+                                snapshot.forEach(doc => {
+                                    drawingDeletes.push(doc.ref.delete());
+                                });
+                                return Promise.all(drawingDeletes);
+                            })
+                    ]);
                 })
                 .then(() => {
                     // Delete the room itself
@@ -646,6 +829,7 @@
                     currentRoom = null;
                     updateRoomUI();
                     artGallery.innerHTML = '';
+                    userList.innerHTML = '';
                 })
                 .catch((error) => {
                     console.error('Error deleting room: ', error);
@@ -714,7 +898,18 @@
                         deletePromises.push(doc.ref.delete());
                     });
                     
-                    return Promise.all(deletePromises);
+                    // Delete all drawings for this room
+                    return Promise.all([
+                        ...deletePromises,
+                        db.collection('drawings').where('roomId', '==', roomId).get()
+                            .then(snapshot => {
+                                const drawingDeletes = [];
+                                snapshot.forEach(doc => {
+                                    drawingDeletes.push(doc.ref.delete());
+                                });
+                                return Promise.all(drawingDeletes);
+                            })
+                    ]);
                 })
                 .then(() => {
                     // Delete the room itself
@@ -727,12 +922,49 @@
                         currentRoom = null;
                         updateRoomUI();
                         artGallery.innerHTML = '';
+                        userList.innerHTML = '';
                     }
                 })
                 .catch((error) => {
                     console.error('Error deleting room: ', error);
                     showNotification('Error deleting room. Please try again.', 'error');
                 });
+        }
+
+        function setupUserPresence() {
+            if (!currentRoom) return;
+            
+            // Update user's last active timestamp every 30 seconds
+            const presenceInterval = setInterval(() => {
+                if (!currentRoom) {
+                    clearInterval(presenceInterval);
+                    return;
+                }
+                
+                db.collection('rooms').doc(currentRoom.id).update({
+                    [`users.${userId}.lastActive`]: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }, 30000);
+            
+            // Listen for user updates
+            db.collection('rooms').doc(currentRoom.id)
+                .onSnapshot((doc) => {
+                    if (doc.exists) {
+                        const roomData = doc.data();
+                        updateUserList(roomData.users || {});
+                    }
+                });
+        }
+
+        function updateUserList(users) {
+            userList.innerHTML = '';
+            
+            Object.keys(users).forEach(userId => {
+                const userBadge = document.createElement('div');
+                userBadge.className = 'user-badge';
+                userBadge.textContent = `User ${userId.substring(0, 8)}`;
+                userList.appendChild(userBadge);
+            });
         }
 
         function updateRoomUI() {
@@ -751,12 +983,19 @@
                 return;
             }
 
-            // Generate a random user ID for this session if not already set
-            const userId = localStorage.getItem('userId') || 'user_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('userId', userId);
+            // Combine both canvases (local and remote) into one image
+            const combinedCanvas = document.createElement('canvas');
+            combinedCanvas.width = artCanvas.width;
+            combinedCanvas.height = artCanvas.height;
+            const combinedCtx = combinedCanvas.getContext('2d');
+            
+            // Draw local canvas
+            combinedCtx.drawImage(artCanvas, 0, 0);
+            // Draw remote canvas on top
+            combinedCtx.drawImage(remoteCanvas, 0, 0);
             
             // Convert canvas to data URL
-            const dataURL = artCanvas.toDataURL('image/png');
+            const dataURL = combinedCanvas.toDataURL('image/png');
             
             // Upload to Firebase Storage
             const storageRef = storage.ref();
