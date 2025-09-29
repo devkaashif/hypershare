@@ -3,1272 +3,576 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Art Sharing</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <title>Kaashif | Personal Website</title>
     <style>
+        /* Reset and base styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
+        
         body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            color: white;
-            min-height: 100vh;
-            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
         }
-
+        
+        /* Header and Navigation */
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
         .container {
+            width: 90%;
             max-width: 1200px;
             margin: 0 auto;
         }
-
-        header {
-            text-align: center;
-            padding: 20px 0;
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .main-content {
+        
+        nav {
             display: flex;
-            flex-direction: column;
-            gap: 30px;
+            justify-content: space-between;
+            align-items: center;
         }
-
-        .room-section, .art-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        }
-
-        .section-title {
+        
+        .logo {
             font-size: 1.5rem;
-            margin-bottom: 15px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-            padding-bottom: 10px;
-        }
-
-        .room-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        input, button {
-            padding: 12px 15px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-
-        input {
-            flex-grow: 1;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            min-width: 200px;
-        }
-
-        input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        button {
-            background: #ff6b6b;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
             font-weight: bold;
         }
-
-        button:hover {
-            background: #ff5252;
-            transform: translateY(-2px);
-        }
-
-        button:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .delete-room {
-            background: #dc3545;
-        }
-
-        .room-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 15px;
-        }
-
-        .room-card {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .room-card:hover {
-            background: rgba(255, 255, 255, 0.25);
-            transform: translateY(-5px);
-        }
-
-        .room-name {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .room-info {
-            font-size: 0.9rem;
-            opacity: 0.8;
+        
+        .nav-links {
             display: flex;
-            justify-content: space-between;
+            list-style: none;
         }
-
-        .delete-room-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(220, 53, 69, 0.7);
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
+        
+        .nav-links li {
+            margin-left: 2rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #3498db;
+        }
+        
+        /* Hero Section */
+        .hero {
+            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
-            padding: 0;
+            text-align: center;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://source.unsplash.com/random/1600x900/?technology') no-repeat center center/cover;
+            color: white;
+            margin-top: 60px;
         }
-
-        .delete-room-btn:hover {
-            background: #dc3545;
+        
+        .hero-content h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
         }
-
-        .art-canvas-container {
+        
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        /* Sections */
+        section {
+            padding: 5rem 0;
+        }
+        
+        section h2 {
+            text-align: center;
+            margin-bottom: 3rem;
+            font-size: 2.5rem;
+            color: #2c3e50;
+        }
+        
+        /* About Section */
+        .about-content {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+        
+        .about-text {
+            flex: 1;
+        }
+        
+        .about-image {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .about-image img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* Skills Section */
+        .skills-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .skill-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .skill-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .skill-card i {
+            font-size: 3rem;
+            color: #3498db;
+            margin-bottom: 1rem;
+        }
+        
+        /* Projects Section */
+        .projects-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .project-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .project-image {
+            height: 200px;
+            background-color: #3498db;
+        }
+        
+        .project-content {
+            padding: 1.5rem;
+        }
+        
+        /* Contact Section */
+        .contact-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+        }
+        
+        .contact-info {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 20px;
+            gap: 1.5rem;
         }
-
-        .canvas-wrapper {
-            position: relative;
-            display: inline-block;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            overflow: hidden;
-            background: white;
-        }
-
-        canvas {
-            display: block;
-            cursor: crosshair;
-        }
-
-        #artCanvas {
-            position: relative;
-            z-index: 2;
-            background: transparent;
-        }
-
-        #remoteCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            pointer-events: none;
-            background: transparent;
-        }
-
-        .canvas-background {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            z-index: 0;
-        }
-
-        .tools {
+        
+        .contact-item {
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .contact-item i {
+            font-size: 1.5rem;
+            color: #3498db;
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        
+        input, textarea {
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        /* Footer */
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+        }
+        
+        .social-links {
+            display: flex;
             justify-content: center;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
         }
-
-        .tool-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.2);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 1.2rem;
+        
+        .social-links a {
+            color: white;
+            font-size: 1.5rem;
+            transition: color 0.3s;
         }
-
-        .tool-btn.active {
-            background: #ff6b6b;
-            transform: scale(1.1);
+        
+        .social-links a:hover {
+            color: #3498db;
         }
-
-        .color-picker {
-            width: 50px;
-            height: 50px;
-            border: none;
-            border-radius: 10px;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        .brush-size {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px 15px;
-            border-radius: 10px;
-        }
-
-        .art-gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .art-item {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .art-item:hover {
-            transform: scale(1.05);
-        }
-
-        .art-item img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-        }
-
-        .art-info {
-            padding: 10px;
-            font-size: 0.9rem;
-        }
-
-        .current-room {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .leave-room {
-            background: #dc3545;
-            padding: 8px 12px;
-            font-size: 0.9rem;
-        }
-
+        
+        /* Notifications */
         .notification {
             position: fixed;
-            top: 20px;
+            top: 100px;
             right: 20px;
-            background: #28a745;
-            color: white;
             padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            transform: translateX(150%);
-            transition: transform 0.3s ease;
-            z-index: 1000;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.error {
-            background: #dc3545;
-        }
-
-        .user-list {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-
-        .user-badge {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-        }
-
-        .debug-info {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 10px;
             border-radius: 5px;
-            font-size: 0.8rem;
-            margin-top: 10px;
+            color: white;
+            font-weight: bold;
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
-
+        
+        .notification.success {
+            background-color: #2ecc71;
+        }
+        
+        .notification.error {
+            background-color: #e74c3c;
+        }
+        
+        .notification.show {
+            opacity: 1;
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .room-controls {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+            
+            .about-content {
                 flex-direction: column;
-            }
-            
-            input, button {
-                width: 100%;
-            }
-            
-            .canvas-wrapper {
-                width: 100%;
-            }
-            
-            canvas {
-                width: 100%;
-                height: auto;
-                max-width: 100%;
             }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Live Art Sharing</h1>
-            <p class="subtitle">Create, share, and collaborate in real-time - no sign up required!</p>
-        </header>
-
-        <div class="main-content">
-            <section class="room-section">
-                <h2 class="section-title">Rooms</h2>
-                <div class="room-controls">
-                    <input type="text" id="roomNameInput" placeholder="Enter room name">
-                    <button id="createRoomBtn">Create Room</button>
-                    <button id="joinRoomBtn">Join Room</button>
-                </div>
-                
-                <div id="currentRoomInfo" class="current-room" style="display: none;">
-                    <div>
-                        <span>Current Room: <strong id="currentRoomName"></strong></span>
-                        <div class="user-list" id="userList"></div>
-                        <div class="debug-info" id="debugInfo"></div>
-                    </div>
-                    <div>
-                        <button id="deleteRoomBtn" class="delete-room">Delete Room</button>
-                        <button id="leaveRoomBtn" class="leave-room">Leave Room</button>
-                    </div>
-                </div>
-                
-                <div class="room-list" id="roomList">
-                    <!-- Rooms will be populated here -->
-                </div>
-            </section>
-
-            <section class="art-section">
-                <h2 class="section-title">Create Art</h2>
-                <div class="art-canvas-container">
-                    <div class="canvas-wrapper">
-                        <div class="canvas-background"></div>
-                        <canvas id="remoteCanvas" width="800" height="500"></canvas>
-                        <canvas id="artCanvas" width="800" height="500"></canvas>
-                    </div>
-                    <div class="tools">
-                        <div class="tool-btn active" data-tool="pencil" title="Pencil">✏️</div>
-                        <div class="tool-btn" data-tool="eraser" title="Eraser">🧽</div>
-                        <input type="color" id="colorPicker" class="color-picker" value="#000000" title="Color Picker">
-                        <div class="brush-size">
-                            <span>Size:</span>
-                            <input type="range" id="brushSize" min="1" max="50" value="5">
-                            <span id="brushSizeValue">5</span>
-                        </div>
-                        <button id="clearCanvasBtn">Clear All</button>
-                        <button id="saveArtBtn">Save Art</button>
-                    </div>
-                </div>
-                
-                <h2 class="section-title" style="margin-top: 30px;">Gallery</h2>
-                <div class="art-gallery" id="artGallery">
-                    <!-- Artworks will be displayed here -->
-                </div>
-            </section>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">Kaashif</div>
+                <ul class="nav-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#skills">Skills</a></li>
+                    <li><a href="#projects">Projects</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
         </div>
-    </div>
+    </header>
 
-    <div class="notification" id="notification"></div>
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Hello, I'm Kaashif</h1>
+            <p>A passionate Full Stack Developer creating amazing digital experiences</p>
+            <a href="#contact" class="btn">Get In Touch</a>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about">
+        <div class="container">
+            <h2>About Me</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>My Journey</h3>
+                    <p>I'm a passionate developer with expertise in modern web technologies. I love creating efficient, scalable solutions that solve real-world problems.</p>
+                    <p>With experience in both frontend and backend development, I enjoy working on projects that challenge me to learn and grow. My goal is to build applications that make a positive impact.</p>
+                    <a href="#" class="btn">Download Resume</a>
+                </div>
+                <div class="about-image">
+                    <img src="https://via.placeholder.com/400" alt="Kaashif">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills">
+        <div class="container">
+            <h2>My Skills</h2>
+            <div class="skills-container">
+                <div class="skill-card">
+                    <i class="fas fa-code"></i>
+                    <h3>Frontend Development</h3>
+                    <p>HTML, CSS, JavaScript, React, Vue.js</p>
+                </div>
+                <div class="skill-card">
+                    <i class="fas fa-server"></i>
+                    <h3>Backend Development</h3>
+                    <p>Node.js, Express, Python, Django, Firebase</p>
+                </div>
+                <div class="skill-card">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h3>Mobile Development</h3>
+                    <p>React Native, Flutter, iOS, Android</p>
+                </div>
+                <div class="skill-card">
+                    <i class="fas fa-database"></i>
+                    <h3>Database Management</h3>
+                    <p>MySQL, MongoDB, PostgreSQL, Firebase</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects">
+        <div class="container">
+            <h2>My Projects</h2>
+            <div class="projects-container">
+                <div class="project-card">
+                    <div class="project-image" style="background: linear-gradient(45deg, #3498db, #2ecc71);"></div>
+                    <div class="project-content">
+                        <h3>E-Commerce Platform</h3>
+                        <p>A full-stack e-commerce solution with user authentication, product management, and payment integration.</p>
+                        <a href="#" class="btn">View Project</a>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image" style="background: linear-gradient(45deg, #e74c3c, #f39c12);"></div>
+                    <div class="project-content">
+                        <h3>Task Management App</h3>
+                        <p>A collaborative task management application with real-time updates and team collaboration features.</p>
+                        <a href="#" class="btn">View Project</a>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <div class="project-image" style="background: linear-gradient(45deg, #9b59b6, #34495e);"></div>
+                    <div class="project-content">
+                        <h3>Weather Dashboard</h3>
+                        <p>A responsive weather application with location-based forecasts and interactive data visualization.</p>
+                        <a href="#" class="btn">View Project</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact">
+        <div class="container">
+            <h2>Get In Touch</h2>
+            <div class="contact-container">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <h3>Location</h3>
+                            <p>Your City, Country</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h3>Email</h3>
+                            <p>kaashif@example.com</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h3>Phone</h3>
+                            <p>+1 (123) 456-7890</p>
+                        </div>
+                    </div>
+                </div>
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label for="name">Your Name</label>
+                        <input type="text" id="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Your Email</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" id="subject" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" required></textarea>
+                    </div>
+                    <div class="spinner" id="formSpinner"></div>
+                    <button type="submit" class="btn" id="submitBtn">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="social-links">
+                <a href="#"><i class="fab fa-linkedin"></i></a>
+                <a href="#"><i class="fab fa-github"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+            <p>&copy; 2023 Kaashif. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Notification Element -->
+    <div id="notification" class="notification"></div>
 
     <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyD0T-mS__FlN3QASJnmD0K6S5VNDiN2bxQ",
-            authDomain: "poplol-7209f.firebaseapp.com",
-            projectId: "poplol-7209f",
-            storageBucket: "poplol-7209f.firebasestorage.app",
-            messagingSenderId: "1058108342269",
-            appId: "1:1058108342269:web:577700a7503b3db8316394",
-            measurementId: "G-EXR6CPBH5R"
-        };
+        // Initialize EmailJS with your public key
+        // You need to sign up at https://www.emailjs.com/ and create a service
+        // Then replace this with your actual public key
+        (function() {
+            emailjs.init("IsaH2GNco6utB9iGa"); // Replace with your EmailJS public key
+        })();
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const storage = firebase.storage();
-
-        // DOM elements
-        const roomNameInput = document.getElementById('roomNameInput');
-        const createRoomBtn = document.getElementById('createRoomBtn');
-        const joinRoomBtn = document.getElementById('joinRoomBtn');
-        const leaveRoomBtn = document.getElementById('leaveRoomBtn');
-        const deleteRoomBtn = document.getElementById('deleteRoomBtn');
-        const currentRoomInfo = document.getElementById('currentRoomInfo');
-        const currentRoomName = document.getElementById('currentRoomName');
-        const userList = document.getElementById('userList');
-        const debugInfo = document.getElementById('debugInfo');
-        const roomList = document.getElementById('roomList');
-        const artCanvas = document.getElementById('artCanvas');
-        const remoteCanvas = document.getElementById('remoteCanvas');
-        const clearCanvasBtn = document.getElementById('clearCanvasBtn');
-        const saveArtBtn = document.getElementById('saveArtBtn');
-        const colorPicker = document.getElementById('colorPicker');
-        const brushSize = document.getElementById('brushSize');
-        const brushSizeValue = document.getElementById('brushSizeValue');
-        const toolButtons = document.querySelectorAll('.tool-btn');
-        const artGallery = document.getElementById('artGallery');
-        const notification = document.getElementById('notification');
-
-        // Canvas contexts
-        const ctx = artCanvas.getContext('2d');
-        const remoteCtx = remoteCanvas.getContext('2d');
-
-        // App state
-        let currentRoom = null;
-        let isDrawing = false;
-        let lastX = 0;
-        let lastY = 0;
-        let currentTool = 'pencil';
-        let currentColor = '#000000';
-        let currentBrushSize = 5;
-        let userId = localStorage.getItem('userId') || 'user_' + Math.random().toString(36).substr(2, 9);
-        let roomUsers = {};
-        let userPaths = {}; // Track drawing paths for each user
-
-        // Initialize
-        function init() {
-            localStorage.setItem('userId', userId);
-            loadRooms();
-            setupCanvas();
-            setupEventListeners();
-            
-            // Show welcome message
-            showNotification('Welcome! Create or join a room to start drawing.');
-            updateDebugInfo('Ready to connect');
-        }
-
-        // Set up event listeners
-        function setupEventListeners() {
-            createRoomBtn.addEventListener('click', createRoom);
-            joinRoomBtn.addEventListener('click', joinRoom);
-            leaveRoomBtn.addEventListener('click', leaveRoom);
-            deleteRoomBtn.addEventListener('click', deleteRoom);
-            clearCanvasBtn.addEventListener('click', clearCanvas);
-            saveArtBtn.addEventListener('click', saveArt);
-            
-            colorPicker.addEventListener('change', (e) => {
-                currentColor = e.target.value;
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if(targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if(targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
             });
-            
-            brushSize.addEventListener('input', (e) => {
-                currentBrushSize = parseInt(e.target.value);
-                ctx.lineWidth = currentBrushSize;
-                brushSizeValue.textContent = currentBrushSize;
-            });
-
-            // Tool selection
-            toolButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    toolButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    currentTool = button.dataset.tool;
-                });
-            });
-
-            // Canvas events
-            artCanvas.addEventListener('mousedown', startDrawing);
-            artCanvas.addEventListener('mousemove', draw);
-            artCanvas.addEventListener('mouseup', stopDrawing);
-            artCanvas.addEventListener('mouseout', stopDrawing);
-
-            // Touch events for mobile
-            artCanvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-            artCanvas.addEventListener('touchmove', handleTouchMove, { passive: false });
-            artCanvas.addEventListener('touchend', stopDrawing);
-
-            // Prevent context menu on canvas
-            artCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
-        }
-
-        // Setup canvas
-        function setupCanvas() {
-            // Set canvas dimensions
-            const width = 800;
-            const height = 500;
-            
-            artCanvas.width = width;
-            artCanvas.height = height;
-            remoteCanvas.width = width;
-            remoteCanvas.height = height;
-            
-            // Clear both canvases
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, width, height);
-            remoteCtx.fillStyle = 'white';
-            remoteCtx.fillRect(0, 0, width, height);
-            
-            // Set drawing styles
-            ctx.lineJoin = 'round';
-            ctx.lineCap = 'round';
-            ctx.lineWidth = currentBrushSize;
-            ctx.strokeStyle = currentColor;
-            
-            remoteCtx.lineJoin = 'round';
-            remoteCtx.lineCap = 'round';
-            remoteCtx.lineWidth = 5;
-            
-            updateDebugInfo('Canvas initialized');
-        }
-
-        // Drawing functions
-        function startDrawing(e) {
-            if (!currentRoom) {
-                showNotification('Please join a room first to start drawing', 'error');
-                return;
-            }
-            
-            isDrawing = true;
-            const coords = getCoordinates(e);
-            lastX = coords.x;
-            lastY = coords.y;
-            
-            // Start a new path
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            
-            // Send drawing start to other users
-            sendDrawingData('start', lastX, lastY);
-            
-            updateDebugInfo(`Drawing started at ${lastX.toFixed(1)}, ${lastY.toFixed(1)}`);
-        }
-
-        function draw(e) {
-            if (!isDrawing || !currentRoom) return;
-            
-            const coords = getCoordinates(e);
-            const x = coords.x;
-            const y = coords.y;
-            
-            // Set drawing style based on tool
-            if (currentTool === 'pencil') {
-                ctx.strokeStyle = currentColor;
-            } else if (currentTool === 'eraser') {
-                ctx.strokeStyle = 'white';
-            }
-            
-            // Draw line
-            ctx.lineTo(x, y);
-            ctx.stroke();
-            
-            // Send drawing data to other users
-            sendDrawingData('draw', x, y);
-            
-            lastX = x;
-            lastY = y;
-        }
-
-        function stopDrawing() {
-            if (!isDrawing) return;
-            
-            isDrawing = false;
-            ctx.closePath();
-            
-            // Send drawing stop to other users
-            sendDrawingData('stop');
-            
-            updateDebugInfo('Drawing stopped');
-        }
-
-        function getCoordinates(e) {
-            const rect = artCanvas.getBoundingClientRect();
-            let clientX, clientY;
-            
-            if (e.type.includes('touch')) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            } else {
-                clientX = e.clientX;
-                clientY = e.clientY;
-            }
-            
-            // Calculate coordinates relative to canvas
-            const x = (clientX - rect.left) * (artCanvas.width / rect.width);
-            const y = (clientY - rect.top) * (artCanvas.height / rect.height);
-            
-            return { x, y };
-        }
-
-        function handleTouchStart(e) {
+        });
+        
+        // Form submission handler
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            startDrawing(e);
-        }
-
-        function handleTouchMove(e) {
-            e.preventDefault();
-            draw(e);
-        }
-
-        function clearCanvas() {
-            if (!currentRoom) {
-                showNotification('Please join a room first', 'error');
-                return;
-            }
             
-            // Clear both canvases
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, artCanvas.width, artCanvas.height);
+            const submitBtn = document.getElementById('submitBtn');
+            const spinner = document.getElementById('formSpinner');
             
-            remoteCtx.fillStyle = 'white';
-            remoteCtx.fillRect(0, 0, remoteCanvas.width, remoteCanvas.height);
+            // Show loading state
+            submitBtn.disabled = true;
+            spinner.style.display = 'block';
             
-            // Reset user paths
-            userPaths = {};
-            
-            // Send clear command to other users
-            sendDrawingData('clear');
-            
-            showNotification('Canvas cleared');
-            updateDebugInfo('Canvas cleared');
-        }
-
-        // Send drawing data to Firestore for real-time sharing
-        function sendDrawingData(action, x, y) {
-            if (!currentRoom) return;
-            
-            const drawingData = {
-                roomId: currentRoom.id,
-                userId: userId,
-                action: action,
-                x: x || 0,
-                y: y || 0,
-                tool: currentTool,
-                color: currentColor,
-                brushSize: currentBrushSize,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            // Get form data
+            const formData = {
+                from_name: document.getElementById('name').value,
+                from_email: document.getElementById('email').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value,
+                to_email: "knesaj711@gmail.com" // Your email address
             };
             
-            db.collection('drawings').add(drawingData)
-                .then(() => {
-                    updateDebugInfo(`Sent: ${action} at ${x?.toFixed(1) || 'N/A'}, ${y?.toFixed(1) || 'N/A'}`);
+            // Send email using EmailJS
+            emailjs.send('service_cci49z6', 'template_5hsolnp', formData)
+                .then(function(response) {
+                    console.log('SUCCESS!', response.status, response.text);
+                    showNotification('Message sent successfully! I\'ll get back to you soon.', 'success');
+                    document.getElementById('contactForm').reset();
+                }, function(error) {
+                    console.log('FAILED...', error);
+                    showNotification('Error sending message. Please try again or contact me directly at knesaj711@gmail.com', 'error');
                 })
-                .catch((error) => {
-                    console.error('Error sending drawing data: ', error);
-                    updateDebugInfo('Error sending drawing data');
+                .finally(() => {
+                    // Reset loading state
+                    submitBtn.disabled = false;
+                    spinner.style.display = 'none';
                 });
-        }
-
-        // Listen for drawing data from other users
-        function listenForDrawings() {
-            if (!currentRoom) return;
-            
-            updateDebugInfo('Listening for drawings...');
-            
-            db.collection('drawings')
-                .where('roomId', '==', currentRoom.id)
-                .orderBy('timestamp', 'asc')
-                .onSnapshot((querySnapshot) => {
-                    querySnapshot.docChanges().forEach((change) => {
-                        if (change.type === 'added') {
-                            const drawing = change.doc.data();
-                            const drawingId = change.doc.id;
-                            
-                            // Don't process our own drawings
-                            if (drawing.userId === userId) {
-                                updateDebugInfo('Received own drawing - ignoring');
-                                return;
-                            }
-                            
-                            updateDebugInfo(`Received: ${drawing.action} from user ${drawing.userId.substring(0, 8)}`);
-                            processRemoteDrawing(drawing, drawingId);
-                        }
-                    });
-                }, (error) => {
-                    console.error('Error listening for drawings:', error);
-                    updateDebugInfo('Error listening for drawings');
-                });
-        }
-
-        // Process drawing data from other users
-        function processRemoteDrawing(drawing, drawingId) {
-            const { action, x, y, tool, color, brushSize, userId: remoteUserId } = drawing;
-            
-            // Initialize path for this user if it doesn't exist
-            if (!userPaths[remoteUserId]) {
-                userPaths[remoteUserId] = {
-                    lastX: 0,
-                    lastY: 0,
-                    isDrawing: false
-                };
-            }
-            
-            const userPath = userPaths[remoteUserId];
-            remoteCtx.lineWidth = brushSize || 5;
-            
-            if (action === 'start') {
-                userPath.isDrawing = true;
-                userPath.lastX = x;
-                userPath.lastY = y;
-                
-                remoteCtx.beginPath();
-                remoteCtx.moveTo(x, y);
-                
-                // Set color based on tool
-                if (tool === 'pencil') {
-                    remoteCtx.strokeStyle = color || '#000000';
-                } else if (tool === 'eraser') {
-                    remoteCtx.strokeStyle = 'white';
-                }
-                
-            } else if (action === 'draw' && userPath.isDrawing) {
-                remoteCtx.lineTo(x, y);
-                remoteCtx.stroke();
-                
-                userPath.lastX = x;
-                userPath.lastY = y;
-                
-            } else if (action === 'stop') {
-                userPath.isDrawing = false;
-                remoteCtx.closePath();
-                
-            } else if (action === 'clear') {
-                // Clear only the remote canvas (other users' drawings)
-                remoteCtx.fillStyle = 'white';
-                remoteCtx.fillRect(0, 0, remoteCanvas.width, remoteCanvas.height);
-                
-                // Reset all user paths
-                userPaths = {};
-            }
-        }
-
-        // Room management functions
-        function createRoom() {
-            const roomName = roomNameInput.value.trim();
-            if (!roomName) {
-                showNotification('Please enter a room name', 'error');
-                return;
-            }
-            
-            updateDebugInfo('Creating room...');
-            
-            db.collection('rooms').add({
-                name: roomName,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                createdBy: userId,
-                userCount: 1,
-                users: {
-                    [userId]: {
-                        joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        lastActive: firebase.firestore.FieldValue.serverTimestamp()
-                    }
-                }
-            })
-            .then((docRef) => {
-                currentRoom = {
-                    id: docRef.id,
-                    name: roomName
-                };
-                updateRoomUI();
-                showNotification(`Room "${roomName}" created successfully!`);
-                roomNameInput.value = '';
-                
-                // Listen for drawings and art updates in this room
-                listenForDrawings();
-                listenForArtUpdates();
-                
-                // Set up user presence
-                setupUserPresence();
-                
-                updateDebugInfo(`Room created: ${roomName}`);
-            })
-            .catch((error) => {
-                console.error('Error creating room: ', error);
-                showNotification('Error creating room. Please try again.', 'error');
-                updateDebugInfo('Error creating room');
-            });
-        }
-
-        function joinRoom() {
-            const roomName = roomNameInput.value.trim();
-            if (!roomName) {
-                showNotification('Please enter a room name', 'error');
-                return;
-            }
-
-            updateDebugInfo(`Joining room: ${roomName}`);
-
-            db.collection('rooms')
-                .where('name', '==', roomName)
-                .get()
-                .then((querySnapshot) => {
-                    if (querySnapshot.empty) {
-                        showNotification('Room not found', 'error');
-                        updateDebugInfo('Room not found');
-                        return;
-                    }
-
-                    const roomDoc = querySnapshot.docs[0];
-                    const roomData = roomDoc.data();
-                    
-                    // Update user count and add user to users object
-                    const users = roomData.users || {};
-                    users[userId] = {
-                        joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        lastActive: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-                    
-                    return db.collection('rooms').doc(roomDoc.id).update({
-                        userCount: Object.keys(users).length,
-                        users: users
-                    })
-                    .then(() => {
-                        currentRoom = {
-                            id: roomDoc.id,
-                            name: roomData.name
-                        };
-                        
-                        updateRoomUI();
-                        showNotification(`Joined room "${roomName}"!`);
-                        roomNameInput.value = '';
-                        
-                        // Listen for drawings and art updates in this room
-                        listenForDrawings();
-                        listenForArtUpdates();
-                        loadRoomArt();
-                        
-                        // Set up user presence
-                        setupUserPresence();
-                        
-                        updateDebugInfo(`Successfully joined: ${roomName}`);
-                    });
-                })
-                .catch((error) => {
-                    console.error('Error joining room: ', error);
-                    showNotification('Error joining room. Please try again.', 'error');
-                    updateDebugInfo('Error joining room');
-                });
-        }
-
-        function leaveRoom() {
-            if (!currentRoom) return;
-            
-            updateDebugInfo('Leaving room...');
-            
-            // Remove user from room's users object
-            db.collection('rooms').doc(currentRoom.id).get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        const roomData = doc.data();
-                        const users = roomData.users || {};
-                        
-                        if (users[userId]) {
-                            delete users[userId];
-                            
-                            return db.collection('rooms').doc(currentRoom.id).update({
-                                userCount: Object.keys(users).length,
-                                users: users
-                            });
-                        }
-                    }
-                })
-                .then(() => {
-                    currentRoom = null;
-                    updateRoomUI();
-                    showNotification('Left the room');
-                    
-                    // Clear the gallery when leaving a room
-                    artGallery.innerHTML = '';
-                    userList.innerHTML = '';
-                    userPaths = {};
-                    
-                    updateDebugInfo('Left room successfully');
-                })
-                .catch((error) => {
-                    console.error('Error leaving room: ', error);
-                    updateDebugInfo('Error leaving room');
-                });
-        }
-
-        function deleteRoom() {
-            if (!currentRoom) return;
-            
-            if (!confirm(`Are you sure you want to delete the room "${currentRoom.name}"? This will also delete all artworks in this room.`)) {
-                return;
-            }
-            
-            updateDebugInfo('Deleting room...');
-            
-            // Delete all artworks in this room first
-            db.collection('artworks')
-                .where('roomId', '==', currentRoom.id)
-                .get()
-                .then((querySnapshot) => {
-                    const deletePromises = [];
-                    
-                    querySnapshot.forEach((doc) => {
-                        // Delete from storage
-                        const artData = doc.data();
-                        if (artData.imageUrl) {
-                            const imageRef = storage.refFromURL(artData.imageUrl);
-                            deletePromises.push(imageRef.delete());
-                        }
-                        
-                        // Delete from firestore
-                        deletePromises.push(doc.ref.delete());
-                    });
-                    
-                    // Delete all drawings for this room
-                    return Promise.all([
-                        ...deletePromises,
-                        db.collection('drawings').where('roomId', '==', currentRoom.id).get()
-                            .then(snapshot => {
-                                const drawingDeletes = [];
-                                snapshot.forEach(doc => {
-                                    drawingDeletes.push(doc.ref.delete());
-                                });
-                                return Promise.all(drawingDeletes);
-                            })
-                    ]);
-                })
-                .then(() => {
-                    // Delete the room itself
-                    return db.collection('rooms').doc(currentRoom.id).delete();
-                })
-                .then(() => {
-                    showNotification(`Room "${currentRoom.name}" deleted successfully`);
-                    currentRoom = null;
-                    updateRoomUI();
-                    artGallery.innerHTML = '';
-                    userList.innerHTML = '';
-                    userPaths = {};
-                    
-                    updateDebugInfo('Room deleted successfully');
-                })
-                .catch((error) => {
-                    console.error('Error deleting room: ', error);
-                    showNotification('Error deleting room. Please try again.', 'error');
-                    updateDebugInfo('Error deleting room');
-                });
-        }
-
-        function loadRooms() {
-            db.collection('rooms')
-                .orderBy('createdAt', 'desc')
-                .onSnapshot((querySnapshot) => {
-                    roomList.innerHTML = '';
-                    
-                    querySnapshot.forEach((doc) => {
-                        const room = doc.data();
-                        const roomCard = document.createElement('div');
-                        roomCard.className = 'room-card';
-                        roomCard.innerHTML = `
-                            <div class="room-name">${room.name}</div>
-                            <div class="room-info">
-                                <span>Users: ${room.userCount || 0}</span>
-                                <span>Created by: ${room.createdBy ? room.createdBy.substring(0, 8) : 'Unknown'}</span>
-                            </div>
-                            <button class="delete-room-btn" data-room-id="${doc.id}">×</button>
-                        `;
-                        
-                        roomCard.addEventListener('click', (e) => {
-                            // Don't trigger room selection if delete button was clicked
-                            if (e.target.classList.contains('delete-room-btn')) return;
-                            roomNameInput.value = room.name;
-                            joinRoom();
-                        });
-                        
-                        // Add event listener for delete button
-                        const deleteBtn = roomCard.querySelector('.delete-room-btn');
-                        deleteBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            if (confirm(`Are you sure you want to delete the room "${room.name}"?`)) {
-                                // Delete room and its artworks
-                                deleteRoomById(doc.id, room.name);
-                            }
-                        });
-                        
-                        roomList.appendChild(roomCard);
-                    });
-                });
-        }
-
-        function deleteRoomById(roomId, roomName) {
-            // Similar to deleteRoom function but for any room
-            updateDebugInfo(`Deleting room: ${roomName}`);
-            
-            // Delete all artworks in this room first
-            db.collection('artworks')
-                .where('roomId', '==', roomId)
-                .get()
-                .then((querySnapshot) => {
-                    const deletePromises = [];
-                    
-                    querySnapshot.forEach((doc) => {
-                        // Delete from storage
-                        const artData = doc.data();
-                        if (artData.imageUrl) {
-                            const imageRef = storage.refFromURL(artData.imageUrl);
-                            deletePromises.push(imageRef.delete());
-                        }
-                        
-                        // Delete from firestore
-                        deletePromises.push(doc.ref.delete());
-                    });
-                    
-                    // Delete all drawings for this room
-                    return Promise.all([
-                        ...deletePromises,
-                        db.collection('drawings').where('roomId', '==', roomId).get()
-                            .then(snapshot => {
-                                const drawingDeletes = [];
-                                snapshot.forEach(doc => {
-                                    drawingDeletes.push(doc.ref.delete());
-                                });
-                                return Promise.all(drawingDeletes);
-                            })
-                    ]);
-                })
-                .then(() => {
-                    // Delete the room itself
-                    return db.collection('rooms').doc(roomId).delete();
-                })
-                .then(() => {
-                    showNotification(`Room "${roomName}" deleted successfully`);
-                    // If we're currently in this room, leave it
-                    if (currentRoom && currentRoom.id === roomId) {
-                        currentRoom = null;
-                        updateRoomUI();
-                        artGallery.innerHTML = '';
-                        userList.innerHTML = '';
-                        userPaths = {};
-                    }
-                    updateDebugInfo(`Room ${roomName} deleted`);
-                })
-                .catch((error) => {
-                    console.error('Error deleting room: ', error);
-                    showNotification('Error deleting room. Please try again.', 'error');
-                    updateDebugInfo('Error deleting room');
-                });
-        }
-
-        function setupUserPresence() {
-            if (!currentRoom) return;
-            
-            // Update user's last active timestamp every 30 seconds
-            const presenceInterval = setInterval(() => {
-                if (!currentRoom) {
-                    clearInterval(presenceInterval);
-                    return;
-                }
-                
-                db.collection('rooms').doc(currentRoom.id).update({
-                    [`users.${userId}.lastActive`]: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            }, 30000);
-            
-            // Listen for user updates
-            db.collection('rooms').doc(currentRoom.id)
-                .onSnapshot((doc) => {
-                    if (doc.exists) {
-                        const roomData = doc.data();
-                        updateUserList(roomData.users || {});
-                    }
-                });
-        }
-
-        function updateUserList(users) {
-            userList.innerHTML = '';
-            
-            Object.keys(users).forEach(userId => {
-                const userBadge = document.createElement('div');
-                userBadge.className = 'user-badge';
-                userBadge.textContent = `User ${userId.substring(0, 8)}`;
-                userList.appendChild(userBadge);
-            });
-        }
-
-        function updateRoomUI() {
-            if (currentRoom) {
-                currentRoomName.textContent = currentRoom.name;
-                currentRoomInfo.style.display = 'flex';
-                
-                // Enable drawing tools
-                artCanvas.style.pointerEvents = 'auto';
-            } else {
-                currentRoomInfo.style.display = 'none';
-                
-                // Disable drawing tools
-                artCanvas.style.pointerEvents = 'none';
-            }
-        }
-
-        function updateDebugInfo(message) {
-            debugInfo.textContent = `Debug: ${message} | User: ${userId.substring(0, 8)}`;
-            console.log(`Debug: ${message}`);
-        }
-
-        // Art management
-        function saveArt() {
-            if (!currentRoom) {
-                showNotification('Please join a room first', 'error');
-                return;
-            }
-
-            // Create a temporary canvas to combine both canvases
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = artCanvas.width;
-            tempCanvas.height = artCanvas.height;
-            const tempCtx = tempCanvas.getContext('2d');
-            
-            // Draw white background
-            tempCtx.fillStyle = 'white';
-            tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-            
-            // Draw remote canvas first (other users' drawings)
-            tempCtx.drawImage(remoteCanvas, 0, 0);
-            // Draw local canvas on top (your drawings)
-            tempCtx.drawImage(artCanvas, 0, 0);
-            
-            // Convert canvas to data URL
-            const dataURL = tempCanvas.toDataURL('image/png');
-            
-            // Upload to Firebase Storage
-            const storageRef = storage.ref();
-            const artRef = storageRef.child(`art/${currentRoom.id}/${Date.now()}-${userId}.png`);
-            
-            // Convert data URL to blob
-            fetch(dataURL)
-                .then(res => res.blob())
-                .then(blob => {
-                    return artRef.put(blob);
-                })
-                .then(snapshot => {
-                    return snapshot.ref.getDownloadURL();
-                })
-                .then(downloadURL => {
-                    // Save art metadata to Firestore
-                    return db.collection('artworks').add({
-                        roomId: currentRoom.id,
-                        imageUrl: downloadURL,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        createdBy: userId,
-                        roomName: currentRoom.name
-                    });
-                })
-                .then(() => {
-                    showNotification('Art saved successfully!');
-                    updateDebugInfo('Art saved to gallery');
-                })
-                .catch((error) => {
-                    console.error('Error saving art: ', error);
-                    showNotification('Error saving art. Please try again.', 'error');
-                    updateDebugInfo('Error saving art');
-                });
-        }
-
-        function loadRoomArt() {
-            if (!currentRoom) return;
-            
-            db.collection('artworks')
-                .where('roomId', '==', currentRoom.id)
-                .orderBy('createdAt', 'desc')
-                .onSnapshot((querySnapshot) => {
-                    artGallery.innerHTML = '';
-                    
-                    querySnapshot.forEach((doc) => {
-                        const art = doc.data();
-                        const artItem = document.createElement('div');
-                        artItem.className = 'art-item';
-                        artItem.innerHTML = `
-                            <img src="${art.imageUrl}" alt="Artwork" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIEVycm9yPC90ZXh0Pjwvc3ZnPg=='">
-                            <div class="art-info">
-                                <div>Room: ${art.roomName}</div>
-                                <div>By: ${art.createdBy ? art.createdBy.substring(0, 8) : 'Unknown'}</div>
-                            </div>
-                        `;
-                        
-                        artGallery.appendChild(artItem);
-                    });
-                });
-        }
-
-        function listenForArtUpdates() {
-            if (!currentRoom) return;
-            
-            db.collection('artworks')
-                .where('roomId', '==', currentRoom.id)
-                .orderBy('createdAt', 'desc')
-                .onSnapshot((querySnapshot) => {
-                    // This will trigger whenever new art is added to the current room
-                    loadRoomArt();
-                });
-        }
-
-        // Utility functions
-        function showNotification(message, type = 'success') {
+        });
+        
+        // Notification function
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
             notification.textContent = message;
-            notification.className = 'notification';
-            notification.classList.add(type === 'error' ? 'error' : 'show');
+            notification.className = `notification ${type} show`;
             
             setTimeout(() => {
                 notification.classList.remove('show');
-            }, 3000);
+            }, 5000);
         }
-
-        // Initialize the app
-        init();
     </script>
 </body>
 </html>
-
