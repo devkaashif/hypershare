@@ -414,6 +414,17 @@
             font-weight: 600;
         }
         
+        /* Form Activation Notice */
+        .activation-notice {
+            background: #f39c12;
+            color: white;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
+        
         /* Responsive Design */
         @media (max-width: 768px) {
             .nav-links {
@@ -619,7 +630,6 @@
                             <h3>Phone</h3>
                             <p>Available upon request</p>
                         </div>
-                    </div>
                     <div class="contact-item">
                         <i class="fas fa-clock"></i>
                         <div>
@@ -628,36 +638,45 @@
                         </div>
                     </div>
                 </div>
+                
                 <!-- FormSubmit form with your endpoint -->
-                <form action="https://formsubmit.co/90e4e8bf1bcec24b861e8679873128c1" method="POST" id="contactForm">
-                    <!-- FormSubmit configuration -->
-                    <input type="hidden" name="_subject" value="New contact from Kaashif's website">
-                    <input type="hidden" name="_template" value="table">
-                    <input type="hidden" name="_captcha" value="false">
-                    <input type="hidden" name="_next" value="?success=true">
+                <div>
+                    <div class="activation-notice">
+                        <i class="fas fa-info-circle"></i> 
+                        Form is ready! Make sure to activate it on FormSubmit to start receiving messages.
+                    </div>
                     
-                    <div class="form-group">
-                        <label for="name">Your Name</label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Your Email</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="subject">Subject</label>
-                        <input type="text" id="subject" name="subject" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="message">Message</label>
-                        <textarea id="message" name="message" placeholder="Tell me about your project or just say hello!" required></textarea>
-                    </div>
-                    <div class="spinner" id="formSpinner"></div>
-                    <div class="success-message" id="successMessage">
-                        <i class="fas fa-check-circle"></i> Thank you! Your message has been sent successfully.
-                    </div>
-                    <button type="submit" class="btn" id="submitBtn">Send Message</button>
-                </form>
+                    <form action="https://formsubmit.co/90e4e8bf1bcec24b861e8679873128c1" method="POST" id="contactForm">
+                        <!-- FormSubmit configuration -->
+                        <input type="hidden" name="_subject" value="New message from Kaashif's Portfolio">
+                        <input type="hidden" name="_template" value="table">
+                        <input type="hidden" name="_captcha" value="false">
+                        <input type="hidden" name="_next" value="https://devkaashif.github.io/?form=success">
+                        <input type="text" name="_honey" style="display:none">
+                        
+                        <div class="form-group">
+                            <label for="name">Your Name</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Your Email</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Subject</label>
+                            <input type="text" id="subject" name="subject" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" name="message" placeholder="Tell me about your project or just say hello!" required></textarea>
+                        </div>
+                        <div class="spinner" id="formSpinner"></div>
+                        <div class="success-message" id="successMessage">
+                            <i class="fas fa-check-circle"></i> Thank you! Your message has been sent successfully.
+                        </div>
+                        <button type="submit" class="btn" id="submitBtn">Send Message</button>
+                    </form>
+                </div>
             </div>
         </div>
     </section>
@@ -705,7 +724,7 @@
             document.querySelector('.nav-links').classList.toggle('active');
         });
         
-        // Form submission handler for better UX
+        // Form submission handler
         document.getElementById('contactForm').addEventListener('submit', function(e) {
             const submitBtn = document.getElementById('submitBtn');
             const spinner = document.getElementById('formSpinner');
@@ -714,17 +733,17 @@
             submitBtn.disabled = true;
             spinner.style.display = 'block';
             
-            // The form will still submit normally to FormSubmit
-            // This is just for better UX
+            // The form will submit to FormSubmit
+            // Show immediate feedback
             setTimeout(() => {
                 document.getElementById('successMessage').style.display = 'block';
-            }, 500);
+            }, 1000);
         });
         
-        // Check if we're returning from FormSubmit (URL might have parameters)
+        // Check if we're returning from successful form submission
         window.addEventListener('load', function() {
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('success') && urlParams.get('success') === 'true') {
+            if (urlParams.has('form') && urlParams.get('form') === 'success') {
                 showNotification('Message sent successfully! I\'ll get back to you soon.', 'success');
                 
                 // Clear the URL parameters
