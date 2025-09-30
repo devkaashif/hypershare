@@ -1,3 +1,191 @@
+<!hyper secure >
+<script>// Disable F12 key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F12' || e.keyCode === 123) {
+        e.preventDefault();
+        return false;
+    }
+});
+// Disable right-click context menu
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+});
+// Disable common developer tools shortcuts
+document.addEventListener('keydown', function(e) {
+    // F12
+    if (e.key === 'F12' || e.keyCode === 123) {
+        e.preventDefault();
+        return false;
+    }
+    
+    // Ctrl+Shift+I (Chrome/Firefox)
+    if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+        e.preventDefault();
+        return false;
+    }
+    
+    // Ctrl+Shift+J (Chrome)
+    if (e.ctrlKey && e.shiftKey && e.key === 'J') {
+        e.preventDefault();
+        return false;
+    }
+    
+    // Ctrl+Shift+C (Chrome)
+    if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+        e.preventDefault();
+        return false;
+    }
+    
+    // Ctrl+U (View Source)
+    if (e.ctrlKey && e.key === 'u') {
+        e.preventDefault();
+        return false;
+    }
+});
+// Simple approach for basic protection
+(() => {
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        if ([123, 73, 74, 67].includes(e.keyCode) && (e.ctrlKey || e.shiftKey)) {
+            e.preventDefault();
+        }
+    });
+})();
+class DevToolsProtection {
+    constructor() {
+        this.init();
+    }
+    
+    init() {
+        // Keyboard protection
+        this.preventKeyboardShortcuts();
+        
+        // Right-click protection
+        this.preventRightClick();
+        
+        // Detect devtools opening
+        this.detectDevTools();
+    }
+    
+    preventKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            const blockedCombinations = [
+                // F12
+                { key: 'F12', keyCode: 123 },
+                // Ctrl+Shift+I
+                { ctrl: true, shift: true, key: 'I' },
+                // Ctrl+Shift+J
+                { ctrl: true, shift: true, key: 'J' },
+                // Ctrl+Shift+C
+                { ctrl: true, shift: true, key: 'C' },
+                // Ctrl+U
+                { ctrl: true, key: 'u' }
+            ];
+            
+            for (const combo of blockedCombinations) {
+                if (this.checkCombination(e, combo)) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.showWarning();
+                    return false;
+                }
+            }
+        });
+    }
+    
+    checkCombination(event, combo) {
+        return (
+            (!combo.ctrlKey || event.ctrlKey) &&
+            (!combo.shiftKey || event.shiftKey) &&
+            (!combo.altKey || event.altKey) &&
+            (combo.key === event.key || combo.keyCode === event.keyCode)
+        );
+    }
+    
+    preventRightClick() {
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            this.showWarning();
+            return false;
+        });
+    }
+    
+    detectDevTools() {
+        // Check if devtools is open by measuring performance
+        const threshold = 160;
+        const start = Date.now();
+        
+        debugger;
+        
+        const end = Date.now();
+        
+        if (end - start > threshold) {
+            this.takeAction();
+        }
+        
+        // Repeat check periodically
+        setInterval(() => {
+            const start = Date.now();
+            debugger;
+            const end = Date.now();
+            
+            if (end - start > threshold) {
+                this.takeAction();
+            }
+        }, 1000);
+    }
+    
+    showWarning() {
+        // You can show a custom warning message
+        console.warn('Developer tools are disabled on this page.');
+        // Or show a modal/notification to the user
+        // this.showModal('Developer tools are not allowed.');
+    }
+    
+    takeAction() {
+        // Actions to take when devtools is detected
+        // Redirect, clear data, show warning, etc.
+        console.warn('Developer tools detected!');
+        
+        // Example: Redirect away
+        // window.location.href = '/no-devtools';
+        
+        // Example: Clear sensitive data
+        // this.clearSensitiveData();
+    }
+    
+    showModal(message) {
+        // Create and show a modal with warning message
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-family: Arial, sans-serif;
+        `;
+        modal.innerHTML = `
+            <div style="background: #333; padding: 20px; border-radius: 5px; text-align: center;">
+                <h3>Warning</h3>
+                <p>${message}</p>
+                <button onclick="this.parentElement.parentElement.remove()">OK</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+}
+
+// Initialize protection
+const devToolsProtection = new DevToolsProtection();
+</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1660,3 +1848,4 @@
     </script>
 </body>
 </html>
+
