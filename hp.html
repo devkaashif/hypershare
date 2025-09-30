@@ -5,31 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kaashif | Full Stack Developer</title>
     <style>
-        /* Reset and base styles */zzzz
+        /* Reset and base styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --light-color: #f9f9f9;
+            --dark-color: #333;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --shadow: 0 5px 15px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background-color: #f9f9f9;
+            color: var(--dark-color);
+            background-color: var(--light-color);
             scroll-behavior: smooth;
+            overflow-x: hidden;
         }
         
         /* Header and Navigation */
         header {
-            background-color: #2c3e50;
+            background-color: var(--secondary-color);
             color: white;
             padding: 1rem 0;
             position: fixed;
             width: 100%;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: var(--transition);
+        }
+        
+        header.scrolled {
+            padding: 0.5rem 0;
+            background-color: rgba(44, 62, 80, 0.95);
+            backdrop-filter: blur(10px);
         }
         
         .container {
@@ -45,8 +65,12 @@
         }
         
         .logo {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: bold;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .nav-links {
@@ -56,17 +80,34 @@
         
         .nav-links li {
             margin-left: 2rem;
+            position: relative;
         }
         
         .nav-links a {
             color: white;
             text-decoration: none;
-            transition: color 0.3s;
+            transition: var(--transition);
             font-weight: 500;
+            padding: 0.5rem 0;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-color);
+            transition: var(--transition);
         }
         
         .nav-links a:hover {
-            color: #3498db;
+            color: var(--primary-color);
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
         }
         
         /* Hero Section */
@@ -78,51 +119,103 @@
             text-align: center;
             background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://source.unsplash.com/random/1600x900/?coding,technology') no-repeat center center/cover;
             color: white;
-            margin-top: 60px;
+            margin-top: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(52, 152, 219, 0.3), rgba(231, 76, 60, 0.3));
+            z-index: 1;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            padding: 0 1rem;
         }
         
         .hero-content h1 {
             font-size: 3.5rem;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             animation: fadeIn 1s ease;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
         }
         
         .hero-content p {
             font-size: 1.3rem;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
             animation: fadeIn 1.5s ease;
+            opacity: 0.9;
         }
         
         .btn {
             display: inline-block;
-            background: #3498db;
+            background: var(--primary-color);
             color: white;
             padding: 0.8rem 1.8rem;
             border: none;
-            border-radius: 5px;
+            border-radius: 30px;
             text-decoration: none;
             font-size: 1rem;
             font-weight: 600;
-            transition: all 0.3s;
+            transition: var(--transition);
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 100%;
+            background: var(--secondary-color);
+            transition: var(--transition);
+            z-index: -1;
         }
         
         .btn:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn:hover::before {
+            width: 100%;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
         }
         
         /* Sections */
         section {
-            padding: 5rem 0;
+            padding: 6rem 0;
         }
         
         section h2 {
             text-align: center;
             margin-bottom: 3rem;
             font-size: 2.5rem;
-            color: #2c3e50;
+            color: var(--secondary-color);
             position: relative;
         }
         
@@ -131,7 +224,7 @@
             display: block;
             width: 80px;
             height: 4px;
-            background: #3498db;
+            background: var(--primary-color);
             margin: 10px auto;
             border-radius: 2px;
         }
@@ -150,7 +243,7 @@
         .about-text h3 {
             font-size: 1.8rem;
             margin-bottom: 1.5rem;
-            color: #2c3e50;
+            color: var(--secondary-color);
         }
         
         .about-text p {
@@ -161,17 +254,37 @@
         .about-image {
             flex: 1;
             text-align: center;
+            position: relative;
+        }
+        
+        .about-image::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            width: 100%;
+            height: 100%;
+            border: 3px solid var(--primary-color);
+            border-radius: 10px;
+            z-index: -1;
+            transition: var(--transition);
         }
         
         .about-image img {
             max-width: 100%;
             border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            position: relative;
         }
         
-        .about-image img:hover {
-            transform: scale(1.02);
+        .about-image:hover::before {
+            top: -10px;
+            left: -10px;
+        }
+        
+        .about-image:hover img {
+            transform: translateY(-5px);
         }
         
         /* Skills Section */
@@ -185,26 +298,66 @@
             background: white;
             padding: 2.5rem 2rem;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            box-shadow: var(--shadow);
             text-align: center;
-            transition: all 0.3s;
-            border-top: 4px solid #3498db;
+            transition: var(--transition);
+            border-top: 4px solid var(--primary-color);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .skill-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+            transition: var(--transition);
+            z-index: 0;
         }
         
         .skill-card:hover {
             transform: translateY(-10px);
             box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            color: white;
+        }
+        
+        .skill-card:hover::before {
+            height: 100%;
+        }
+        
+        .skill-card:hover i,
+        .skill-card:hover h3,
+        .skill-card:hover p {
+            position: relative;
+            z-index: 1;
         }
         
         .skill-card i {
             font-size: 3.5rem;
-            color: #3498db;
+            color: var(--primary-color);
             margin-bottom: 1.5rem;
+            transition: var(--transition);
+        }
+        
+        .skill-card:hover i {
+            color: white;
         }
         
         .skill-card h3 {
             margin-bottom: 1rem;
-            color: #2c3e50;
+            color: var(--secondary-color);
+            transition: var(--transition);
+        }
+        
+        .skill-card:hover h3 {
+            color: white;
+        }
+        
+        .skill-card p {
+            transition: var(--transition);
         }
         
         /* Projects Section */
@@ -218,24 +371,41 @@
             background: white;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: all 0.3s;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            position: relative;
         }
         
         .project-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
         }
         
         .project-image {
             height: 200px;
-            background-color: #3498db;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-size: 1.2rem;
             font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .project-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.3);
+            transition: var(--transition);
+        }
+        
+        .project-card:hover .project-image::after {
+            background: rgba(0,0,0,0.1);
         }
         
         .project-content {
@@ -244,12 +414,17 @@
         
         .project-content h3 {
             margin-bottom: 1rem;
-            color: #2c3e50;
+            color: var(--secondary-color);
         }
         
         .project-content p {
             margin-bottom: 1.5rem;
             color: #666;
+        }
+        
+        .project-links {
+            display: flex;
+            gap: 1rem;
         }
         
         /* Contact Section */
@@ -273,18 +448,24 @@
             background: white;
             border-radius: 8px;
             box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            transition: var(--transition);
+        }
+        
+        .contact-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         
         .contact-item i {
             font-size: 1.8rem;
-            color: #3498db;
+            color: var(--primary-color);
             width: 50px;
             text-align: center;
         }
         
         .contact-item h3 {
             margin-bottom: 0.3rem;
-            color: #2c3e50;
+            color: var(--secondary-color);
         }
         
         form {
@@ -294,7 +475,7 @@
             background: white;
             padding: 2.5rem;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            box-shadow: var(--shadow);
         }
         
         .form-group {
@@ -305,7 +486,7 @@
         label {
             margin-bottom: 0.5rem;
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--secondary-color);
         }
         
         input, textarea {
@@ -314,12 +495,12 @@
             border-radius: 5px;
             font-family: inherit;
             font-size: 1rem;
-            transition: border 0.3s;
+            transition: var(--transition);
         }
         
         input:focus, textarea:focus {
             outline: none;
-            border-color: #3498db;
+            border-color: var(--primary-color);
             box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
         }
         
@@ -330,7 +511,7 @@
         
         /* Footer */
         footer {
-            background: #2c3e50;
+            background: var(--secondary-color);
             color: white;
             text-align: center;
             padding: 3rem 0 2rem;
@@ -346,11 +527,51 @@
         .social-links a {
             color: white;
             font-size: 1.8rem;
-            transition: all 0.3s;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
         }
         
         .social-links a:hover {
-            color: #3498db;
+            color: var(--primary-color);
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.2);
+        }
+        
+        /* Back to top button */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            opacity: 0;
+            visibility: hidden;
+            z-index: 999;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .back-to-top.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .back-to-top:hover {
+            background: var(--secondary-color);
             transform: translateY(-3px);
         }
         
@@ -365,16 +586,16 @@
             font-weight: bold;
             z-index: 1001;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: var(--transition);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         
         .notification.success {
-            background-color: #2ecc71;
+            background-color: var(--success-color);
         }
         
         .notification.error {
-            background-color: #e74c3c;
+            background-color: var(--accent-color);
         }
         
         .notification.show {
@@ -385,7 +606,7 @@
         .spinner {
             display: none;
             border: 4px solid rgba(0, 0, 0, 0.1);
-            border-left-color: #3498db;
+            border-left-color: var(--primary-color);
             border-radius: 50%;
             width: 30px;
             height: 30px;
@@ -405,7 +626,7 @@
         /* Success Message */
         .success-message {
             display: none;
-            background: #2ecc71;
+            background: var(--success-color);
             color: white;
             padding: 1rem;
             border-radius: 5px;
@@ -416,13 +637,25 @@
         
         /* Form Activation Notice */
         .activation-notice {
-            background: #f39c12;
+            background: var(--warning-color);
             color: white;
             padding: 1rem;
             border-radius: 5px;
             margin-bottom: 1.5rem;
             text-align: center;
             font-weight: 600;
+        }
+        
+        /* Progress bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            z-index: 1001;
+            transition: width 0.3s ease;
         }
         
         /* Responsive Design */
@@ -446,6 +679,14 @@
             form {
                 padding: 1.5rem;
             }
+            
+            .back-to-top {
+                bottom: 20px;
+                right: 20px;
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
         }
         
         /* Mobile Menu */
@@ -456,6 +697,7 @@
             color: white;
             font-size: 1.5rem;
             cursor: pointer;
+            z-index: 1002;
         }
         
         @media (max-width: 768px) {
@@ -465,32 +707,53 @@
             
             .nav-links {
                 position: fixed;
-                top: 70px;
+                top: 0;
                 left: 0;
                 width: 100%;
-                background: #2c3e50;
+                height: 100vh;
+                background: var(--secondary-color);
                 flex-direction: column;
                 align-items: center;
+                justify-content: center;
                 padding: 1rem 0;
-                transform: translateY(-100%);
-                transition: transform 0.3s;
+                transform: translateX(-100%);
+                transition: var(--transition);
                 box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+                z-index: 1001;
             }
             
             .nav-links.active {
-                transform: translateY(0);
+                transform: translateX(0);
             }
             
             .nav-links li {
-                margin: 1rem 0;
+                margin: 1.5rem 0;
+            }
+            
+            .nav-links a {
+                font-size: 1.2rem;
+            }
+            
+            .close-menu {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1.5rem;
+                cursor: pointer;
             }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+    
     <!-- Header -->
-    <header>
+    <header id="header">
         <div class="container">
             <nav>
                 <div class="logo">Kaashif</div>
@@ -498,6 +761,7 @@
                     <i class="fas fa-bars"></i>
                 </button>
                 <ul class="nav-links">
+                    <button class="close-menu"><i class="fas fa-times"></i></button>
                     <li><a href="#home">Home</a></li>
                     <li><a href="#about">About</a></li>
                     <li><a href="#skills">Skills</a></li>
@@ -513,7 +777,10 @@
         <div class="hero-content">
             <h1>Hello, I'm Kaashif</h1>
             <p>A passionate Full Stack Developer creating amazing digital experiences</p>
-            <a href="#contact" class="btn">Get In Touch</a>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="#contact" class="btn">Get In Touch</a>
+                <a href="#projects" class="btn btn-outline">View My Work</a>
+            </div>
         </div>
     </section>
 
@@ -527,7 +794,10 @@
                     <p>I'm a passionate developer with expertise in modern web technologies. I love creating efficient, scalable solutions that solve real-world problems.</p>
                     <p>With experience in both frontend and backend development, I enjoy working on projects that challenge me to learn and grow. My goal is to build applications that make a positive impact.</p>
                     <p>When I'm not coding, you can find me exploring new technologies, contributing to open-source projects, or sharing knowledge with the developer community.</p>
-                    <a href="#" class="btn">Download Resume</a>
+                    <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                        <a href="#" class="btn">Download Resume</a>
+                        <a href="#contact" class="btn btn-outline">Hire Me</a>
+                    </div>
                 </div>
                 <div class="about-image">
                     <img src="https://via.placeholder.com/400" alt="Kaashif">
@@ -577,7 +847,10 @@
                     <div class="project-content">
                         <h3>AI Assistant</h3>
                         <p>An intelligent AI agent that can understand and respond to user queries with contextual awareness and natural language processing.</p>
-                        <a href="https://devkaashif.github.io/olmessage/test.html" class="btn" target="_blank">View Project</a>
+                        <div class="project-links">
+                            <a href="https://devkaashif.github.io/olmessage/test.html" class="btn" target="_blank">View Project</a>
+                            <a href="#" class="btn btn-outline">Source Code</a>
+                        </div>
                     </div>
                 </div>
                 <div class="project-card">
@@ -587,7 +860,10 @@
                     <div class="project-content">
                         <h3>Online Store</h3>
                         <p>A full-featured e-commerce platform with user authentication, product management, shopping cart, and secure payment integration.</p>
-                        <a href="#" class="btn">View Project</a>
+                        <div class="project-links">
+                            <a href="#" class="btn">View Project</a>
+                            <a href="#" class="btn btn-outline">Source Code</a>
+                        </div>
                     </div>
                 </div>
                 <div class="project-card">
@@ -597,7 +873,10 @@
                     <div class="project-content">
                         <h3>Productivity App</h3>
                         <p>A collaborative task management application with real-time updates, team collaboration features, and progress tracking.</p>
-                        <a href="#" class="btn">View Project</a>
+                        <div class="project-links">
+                            <a href="#" class="btn">View Project</a>
+                            <a href="#" class="btn btn-outline">Source Code</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -630,6 +909,7 @@
                             <h3>Phone</h3>
                             <p>Available upon request</p>
                         </div>
+                    </div>
                     <div class="contact-item">
                         <i class="fas fa-clock"></i>
                         <div>
@@ -641,8 +921,6 @@
                 
                 <!-- FormSubmit form with your endpoint -->
                 <div>
-                
-                    
                     <form action="https://formsubmit.co/90e4e8bf1bcec24b861e8679873128c1" method="POST" id="contactForm">
                         <!-- FormSubmit configuration -->
                         <input type="hidden" name="_subject" value="New message from Kaashif's Portfolio">
@@ -691,6 +969,11 @@
         </div>
     </footer>
 
+    <!-- Back to Top Button -->
+    <div class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
     <!-- Notification Element -->
     <div id="notification" class="notification"></div>
 
@@ -718,7 +1001,11 @@
         
         // Mobile menu toggle
         document.querySelector('.mobile-menu-btn').addEventListener('click', function() {
-            document.querySelector('.nav-links').classList.toggle('active');
+            document.querySelector('.nav-links').classList.add('active');
+        });
+        
+        document.querySelector('.close-menu').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.remove('active');
         });
         
         // Form submission handler
@@ -781,10 +1068,56 @@
             el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
             observer.observe(el);
         });
+        
+        // Header scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('header');
+            const backToTop = document.getElementById('backToTop');
+            
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+                backToTop.classList.add('active');
+            } else {
+                header.classList.remove('scrolled');
+                backToTop.classList.remove('active');
+            }
+            
+            // Progress bar
+            const winHeight = window.innerHeight;
+            const docHeight = document.documentElement.scrollHeight;
+            const scrollTop = window.pageYOffset;
+            const trackLength = docHeight - winHeight;
+            const progress = Math.floor(scrollTop / trackLength * 100);
+            
+            document.getElementById('progressBar').style.width = progress + '%';
+        });
+        
+        // Back to top functionality
+        document.getElementById('backToTop').addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Typing effect for hero section
+        const heroText = document.querySelector('.hero-content h1');
+        const originalText = heroText.textContent;
+        heroText.textContent = '';
+        
+        let i = 0;
+        function typeWriter() {
+            if (i < originalText.length) {
+                heroText.textContent += originalText.charAt(i);
+                i++;
+                setTimeout(typeWriter, 100);
+            }
+        }
+        
+        // Start typing effect after page loads
+        window.addEventListener('load', function() {
+            setTimeout(typeWriter, 500);
+        });
     </script>
 </body>
 </html>
-
-
-
-
