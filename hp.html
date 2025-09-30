@@ -104,6 +104,14 @@
             position: relative;
             overflow: hidden;
             padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo-icon {
+            margin-right: 10px;
+            font-size: 1.8rem;
+            animation: pulse 2s infinite;
         }
         
         .logo::after {
@@ -218,6 +226,14 @@
             margin-bottom: 2.5rem;
             opacity: 0.9;
             line-height: 1.8;
+        }
+        
+        .typing-text {
+            border-right: 3px solid var(--primary-color);
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-block;
+            animation: blink 1s infinite;
         }
         
         .btn {
@@ -743,6 +759,11 @@
             100% { transform: scale(1); }
         }
         
+        @keyframes blink {
+            0%, 100% { border-color: transparent; }
+            50% { border-color: var(--primary-color); }
+        }
+        
         /* Success Message */
         .success-message {
             display: none;
@@ -805,6 +826,104 @@
             width: 100%;
             height: 100%;
             z-index: -1;
+        }
+        
+        /* Stats Section */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .stat-item:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-heavy);
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+        }
+        
+        /* Testimonials Section */
+        .testimonials-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+        
+        .testimonial-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            position: relative;
+            transition: var(--transition);
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-heavy);
+        }
+        
+        .testimonial-card::before {
+            content: '"';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 5rem;
+            color: rgba(52, 152, 219, 0.2);
+            font-family: Georgia, serif;
+            line-height: 1;
+        }
+        
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+        }
+        
+        .testimonial-author img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 1rem;
+            object-fit: cover;
+        }
+        
+        .author-info h4 {
+            margin-bottom: 0.2rem;
+            color: var(--secondary-color);
+        }
+        
+        .author-info p {
+            color: #666;
+            font-size: 0.9rem;
         }
         
         /* Responsive Design */
@@ -957,7 +1076,10 @@
     <header id="header">
         <div class="container">
             <nav>
-                <div class="logo">HYPERPARROT</div>
+                <div class="logo">
+                    <i class="fas fa-feather-alt logo-icon"></i>
+                    HYPERPARROT
+                </div>
                 <button class="mobile-menu-btn">
                     <i class="fas fa-bars"></i>
                 </button>
@@ -977,7 +1099,7 @@
     <section id="home" class="hero">
         <div class="floating-elements" id="floatingElements"></div>
         <div class="hero-content">
-            <h1>Welcome To HYPERPARROT</h1>
+            <h1>Welcome To <span class="typing-text" id="typingText"></span></h1>
             <p>A passionate Full Stack Developer creating amazing digital experiences</p>
             <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-top: 3rem;">
                 <a href="#contact" class="btn">Get In Touch</a>
@@ -1003,6 +1125,26 @@
                 </div>
                 <div class="about-image">
                     <img src="https://via.placeholder.com/500" alt="HYPERPARROT">
+                </div>
+            </div>
+            
+            <!-- Stats Section -->
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-number" data-count="50">0</div>
+                    <div class="stat-label">Projects Completed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-count="3">0</div>
+                    <div class="stat-label">Years Experience</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-count="25">0</div>
+                    <div class="stat-label">Happy Clients</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-count="10">0</div>
+                    <div class="stat-label">Awards Won</div>
                 </div>
             </div>
         </div>
@@ -1076,8 +1218,47 @@
         </div>
     </section>
 
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="section-dark">
+        <div class="container">
+            <h2>What Clients Say</h2>
+            <div class="testimonials-container">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">Working with HYPERPARROT was an absolute pleasure. Their attention to detail and technical expertise resulted in a product that exceeded our expectations.</p>
+                    <div class="testimonial-author">
+                        <img src="https://via.placeholder.com/50" alt="Client">
+                        <div class="author-info">
+                            <h4>Sarah Johnson</h4>
+                            <p>CEO, TechSolutions Inc.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">The website HYPERPARROT developed for us has significantly improved our online presence and user engagement. Highly recommended!</p>
+                    <div class="testimonial-author">
+                        <img src="https://via.placeholder.com/50" alt="Client">
+                        <div class="author-info">
+                            <h4>Michael Chen</h4>
+                            <p>Marketing Director, InnovateCo</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">Exceptional developer with a keen eye for design and functionality. Delivered our project ahead of schedule with outstanding quality.</p>
+                    <div class="testimonial-author">
+                        <img src="https://via.placeholder.com/50" alt="Client">
+                        <div class="author-info">
+                            <h4>Emily Rodriguez</h4>
+                            <p>Product Manager, StartupXYZ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Contact Section -->
-    <section id="contact" class="section-dark">
+    <section id="contact" class="section-light">
         <div class="container">
             <h2>Get In Touch</h2>
             <div class="contact-container">
@@ -1255,7 +1436,7 @@
         }, observerOptions);
         
         // Observe elements for animation
-        document.querySelectorAll('.skill-card, .project-card, .about-content, .contact-container').forEach(el => {
+        document.querySelectorAll('.skill-card, .project-card, .about-content, .contact-container, .testimonial-card, .stat-item').forEach(el => {
             el.style.opacity = 0;
             el.style.transform = 'translateY(20px)';
             el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
@@ -1294,22 +1475,41 @@
         });
         
         // Typing effect for hero section
-        const heroText = document.querySelector('.hero-content h1');
-        const originalText = heroText.textContent;
-        heroText.textContent = '';
+        const texts = ["HYPERPARROT", "Full Stack Developer", "Problem Solver", "Creative Thinker"];
+        let textIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        const typingSpeed = 100;
+        const erasingSpeed = 50;
+        const newTextDelay = 2000;
         
-        let i = 0;
-        function typeWriter() {
-            if (i < originalText.length) {
-                heroText.textContent += originalText.charAt(i);
-                i++;
-                setTimeout(typeWriter, 100);
+        function type() {
+            const currentText = texts[textIndex];
+            const typingElement = document.getElementById('typingText');
+            
+            if (isDeleting) {
+                typingElement.textContent = currentText.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                typingElement.textContent = currentText.substring(0, charIndex + 1);
+                charIndex++;
+            }
+            
+            if (!isDeleting && charIndex === currentText.length) {
+                isDeleting = true;
+                setTimeout(type, newTextDelay);
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                textIndex = (textIndex + 1) % texts.length;
+                setTimeout(type, typingSpeed);
+            } else {
+                setTimeout(type, isDeleting ? erasingSpeed : typingSpeed);
             }
         }
         
         // Start typing effect after page loads
         window.addEventListener('load', function() {
-            setTimeout(typeWriter, 500);
+            setTimeout(type, 1000);
         });
         
         // Create floating elements
@@ -1335,6 +1535,40 @@
         
         // Initialize floating elements
         createFloatingElements();
+        
+        // Animated counter for stats
+        function animateCounter() {
+            const counters = document.querySelectorAll('.stat-number');
+            const speed = 200;
+            
+            counters.forEach(counter => {
+                const target = +counter.getAttribute('data-count');
+                const count = +counter.innerText;
+                const increment = target / speed;
+                
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + increment);
+                    setTimeout(() => animateCounter(), 1);
+                } else {
+                    counter.innerText = target;
+                }
+            });
+        }
+        
+        // Start counter animation when stats section is in view
+        const statsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounter();
+                    statsObserver.unobserve(entry.target);
+                }
+            });
+        });
+        
+        const statsSection = document.querySelector('.stats-container');
+        if (statsSection) {
+            statsObserver.observe(statsSection);
+        }
     </script>
 </body>
 </html>
