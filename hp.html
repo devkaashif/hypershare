@@ -52,7 +52,6 @@
             overflow-x: hidden;
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 10px;
         }
@@ -70,7 +69,31 @@
             background: var(--primary-dark);
         }
 
-        /* Header & Navigation */
+        /* Animated background particles */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(108, 99, 255, 0.3);
+            border-radius: 50%;
+            animation: float-particle 15s infinite;
+        }
+
+        @keyframes float-particle {
+            0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
+            100% { transform: translateY(-100vh) translateX(50px) scale(1.5); opacity: 0; }
+        }
+
         header {
             position: fixed;
             top: 0;
@@ -111,6 +134,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            cursor: pointer;
         }
 
         .logo-icon {
@@ -170,7 +194,6 @@
             z-index: 1002;
         }
 
-        /* Hero Section */
         .hero {
             min-height: 100vh;
             display: flex;
@@ -198,6 +221,18 @@
             z-index: 1;
             max-width: 800px;
             padding: 2rem;
+            animation: fadeInUp 1s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .hero-badge {
@@ -210,6 +245,12 @@
             font-weight: 500;
             margin-bottom: 1.5rem;
             box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .hero h1 {
@@ -296,14 +337,22 @@
             width: 100%;
         }
 
-        /* Sections */
         section {
             padding: 6rem 0;
+            position: relative;
         }
 
         .section-header {
             text-align: center;
             margin-bottom: 4rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+
+        .section-header.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .section-header h2 {
@@ -334,12 +383,22 @@
             margin: 0 auto;
         }
 
-        /* About Section */
         .about-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 4rem;
             align-items: center;
+        }
+
+        .about-text {
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: all 0.8s ease;
+        }
+
+        .about-text.visible {
+            opacity: 1;
+            transform: translateX(0);
         }
 
         .about-text h3 {
@@ -367,10 +426,17 @@
             box-shadow: var(--shadow-light);
             text-align: center;
             transition: var(--transition);
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        .stat.visible {
+            opacity: 1;
+            transform: scale(1);
         }
 
         .stat:hover {
-            transform: translateY(-5px);
+            transform: translateY(-5px) scale(1.05);
             box-shadow: var(--shadow);
         }
 
@@ -391,6 +457,14 @@
         .about-image {
             position: relative;
             text-align: center;
+            opacity: 0;
+            transform: translateX(30px);
+            transition: all 0.8s ease;
+        }
+
+        .about-image.visible {
+            opacity: 1;
+            transform: translateX(0);
         }
 
         .about-image::before {
@@ -422,7 +496,6 @@
             transform: scale(1.02);
         }
 
-        /* Skills Section */
         .skills {
             background: var(--gradient-dark);
             color: white;
@@ -445,6 +518,13 @@
             border-radius: var(--border-radius);
             padding: 2.5rem;
             transition: var(--transition);
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .skill-category.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .skill-category:hover {
@@ -502,9 +582,14 @@
             height: 100%;
             background: var(--gradient-primary);
             border-radius: 3px;
+            transition: width 1s ease;
+            width: 0;
         }
 
-        /* Projects Section */
+        .skill-category.visible .skill-progress {
+            width: var(--progress-width);
+        }
+
         .projects-filter {
             display: flex;
             justify-content: center;
@@ -527,6 +612,7 @@
             background: var(--gradient-primary);
             color: white;
             border-color: var(--primary);
+            transform: translateY(-2px);
         }
 
         .projects-grid {
@@ -542,6 +628,13 @@
             box-shadow: var(--shadow);
             transition: var(--transition);
             position: relative;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .project-card.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .project-card:hover {
@@ -603,7 +696,7 @@
         }
 
         .project-link:hover {
-            transform: scale(1.1);
+            transform: scale(1.1) rotate(5deg);
             background: var(--gradient-secondary);
         }
 
@@ -635,9 +728,15 @@
             border-radius: 50px;
             font-size: 0.8rem;
             font-weight: 500;
+            transition: var(--transition-fast);
         }
 
-        /* Contact Section */
+        .project-tag:hover {
+            background: var(--gradient-primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
         .contact-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -659,6 +758,13 @@
             border-radius: var(--border-radius);
             box-shadow: var(--shadow-light);
             transition: var(--transition);
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+
+        .contact-item.visible {
+            opacity: 1;
+            transform: translateX(0);
         }
 
         .contact-item:hover {
@@ -692,6 +798,14 @@
             padding: 2.5rem;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
+            opacity: 0;
+            transform: translateX(30px);
+            transition: all 0.8s ease;
+        }
+
+        .contact-form.visible {
+            opacity: 1;
+            transform: translateX(0);
         }
 
         .form-group {
@@ -725,7 +839,6 @@
             resize: vertical;
         }
 
-        /* Footer */
         footer {
             background: var(--gradient-dark);
             color: white;
@@ -788,7 +901,7 @@
 
         .social-icon:hover {
             background: var(--gradient-primary);
-            transform: translateY(-5px);
+            transform: translateY(-5px) rotate(360deg);
         }
 
         .footer-bottom {
@@ -798,7 +911,6 @@
             color: rgba(255, 255, 255, 0.7);
         }
 
-        /* Back to Top */
         .back-to-top {
             position: fixed;
             bottom: 30px;
@@ -825,11 +937,10 @@
         }
 
         .back-to-top:hover {
-            transform: translateY(-5px);
+            transform: translateY(-5px) scale(1.1);
             background: var(--gradient-secondary);
         }
 
-        /* Animations */
         @keyframes float {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
@@ -841,12 +952,6 @@
             50% { border-color: var(--primary-light); }
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Responsive Design */
         @media (max-width: 992px) {
             .about-content, .contact-container {
                 grid-template-columns: 1fr;
@@ -919,7 +1024,6 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header id="header">
         <div class="container">
             <nav>
@@ -941,8 +1045,8 @@
         </div>
     </header>
 
-    <!-- Hero Section -->
     <section id="home" class="hero">
+        <div class="particles" id="particles"></div>
         <div class="container">
             <div class="hero-content">
                 <span class="hero-badge">Full Stack Developer</span>
@@ -960,7 +1064,6 @@
         </div>
     </section>
 
-    <!-- About Section -->
     <section id="about">
         <div class="container">
             <div class="section-header">
@@ -1000,7 +1103,6 @@
         </div>
     </section>
 
-    <!-- Skills Section -->
     <section id="skills" class="skills">
         <div class="container">
             <div class="section-header">
@@ -1017,25 +1119,25 @@
                         <li>
                             <span class="skill-name">HTML/CSS</span>
                             <div class="skill-level">
-                                <div class="skill-progress" style="width: 95%"></div>
+                                <div class="skill-progress" style="--progress-width: 95%"></div>
                             </div>
                         </li>
                         <li>
                             <span class="skill-name">JavaScript</span>
                             <div class="skill-level">
-                                <div class="skill-progress" style="width: 90%"></div>
+                                <div class="skill-progress" style="--progress-width: 90%"></div>
                             </div>
                         </li>
                         <li>
                             <span class="skill-name">React</span>
                             <div class="skill-level">
-                                <div class="skill-progress" style="width: 85%"></div>
+                                <div class="skill-progress" style="--progress-width: 85%"></div>
                             </div>
                         </li>
                         <li>
                             <span class="skill-name">Vue.js</span>
                             <div class="skill-level">
-                                <div class="skill-progress" style="width: 80%"></div>
+                                <div class="skill-progress" style="--progress-width: 80%"></div>
                             </div>
                         </li>
                     </ul>
@@ -1050,25 +1152,25 @@
                         <li>
                             <span class="skill-name">Node.js</span>
                             <div class="skill-level">
-                                <div class="skill-progress" style="width: 88%"></div>
+                                <div class="skill-progress" style="--progress-width: 88%"></div>
                             </div>
                         </li>
                         <li>
                             <span class="skill-name">Python</span>
                             <div class="skill-level">
-                                <div class="skill-progress" style="width: 85%"></div>
+                                <div class="skill-progress" style="--progress-width: 85%"></div>
                             </div>
                         </li>
                         <li>
                             <span class="skill-name">PHP</span>
                             <div class="skill-level">
-                                <div class="skill-progress" style="width: 75%"></div>
+                                <div class="skill-progress" style="--progress-width: 75%"></div>
                             </div>
                         </li>
                         <li>
                             <span class="skill-name">REST APIs</span>
                             <div class="skill-level">
-                                <div class="skill-progress" style="width: 90%"></div>
+                                <div class="skill-progress" style="--progress-width: 90%"></div>
                             </div>
                         </li>
                     </ul>
@@ -1083,25 +1185,25 @@
                         <li>
                             <span class="skill-name">MySQL</span>
                             <div class="skill-level">
-                                <div class="skill-progress" style="width: 85%"></div>
+                                <div class="skill-progress" style="--progress-width: 85%"></div>
                             </div>
                         </li>
                         <li>
                             <span class="skill-name">MongoDB</span>
                             <div class="skill-level">
-                                <div class="skill-progress" style="width: 80%"></div>
+                                <div class="skill-progress" style="--progress-width: 80%"></div>
                             </div>
                         </li>
                         <li>
                             <span class="skill-name">PostgreSQL</span>
                             <div class="skill-level">
-                                <div class="skill-progress" style="width: 75%"></div>
+                                <div class="skill-progress" style="--progress-width: 75%"></div>
                             </div>
                         </li>
                         <li>
                             <span class="skill-name">Firebase</span>
                             <div class="skill-level">
-                                <div class="skill-progress" style="width: 85%"></div>
+                                <div class="skill-progress" style="--progress-width: 85%"></div>
                             </div>
                         </li>
                     </ul>
@@ -1110,7 +1212,6 @@
         </div>
     </section>
 
-    <!-- Projects Section -->
     <section id="projects">
         <div class="container">
             <div class="section-header">
@@ -1204,7 +1305,6 @@
         </div>
     </section>
 
-    <!-- Contact Section -->
     <section id="contact">
         <div class="container">
             <div class="section-header">
@@ -1292,7 +1392,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
         <div class="container">
             <div class="footer-content">
@@ -1340,13 +1439,49 @@
         </div>
     </footer>
 
-    <!-- Back to Top Button -->
     <a href="#" class="back-to-top" id="backToTop">
         <i class="fas fa-arrow-up"></i>
     </a>
 
     <script>
-        // Mobile Menu Toggle
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 20;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.width = Math.random() * 5 + 2 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        createParticles();
+
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all animated elements
+        document.querySelectorAll('.section-header, .about-text, .about-image, .skill-category, .project-card, .contact-item, .contact-form, .stat').forEach(el => {
+            observer.observe(el);
+        });
+
         const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
         const navLinks = document.querySelector('.nav-links');
         
@@ -1357,7 +1492,6 @@
                 : '<i class="fas fa-bars"></i>';
         });
 
-        // Close mobile menu when clicking on a link
         document.querySelectorAll('.nav-links a').forEach(link => {
             link.addEventListener('click', () => {
                 navLinks.classList.remove('active');
@@ -1365,7 +1499,6 @@
             });
         });
 
-        // Header scroll effect
         window.addEventListener('scroll', () => {
             const header = document.getElementById('header');
             const backToTop = document.getElementById('backToTop');
@@ -1378,11 +1511,9 @@
                 backToTop.classList.remove('active');
             }
             
-            // Update active nav link based on scroll position
             updateActiveNavLink();
         });
 
-        // Update active navigation link
         function updateActiveNavLink() {
             const sections = document.querySelectorAll('section');
             const navLinks = document.querySelectorAll('.nav-links a');
@@ -1406,8 +1537,7 @@
             });
         }
 
-        // Typing effect
-        const texts = ["Kaashif", "a Developer", "a Problem Solver", "a Creative Thinker","a Web-Devloper"];
+        const texts = ["Kaashif", "a Developer", "a Problem Solver", "a Creative Thinker", "a Web Developer"];
         let textIndex = 0;
         let charIndex = 0;
         let isDeleting = false;
@@ -1439,12 +1569,10 @@
             }
         }
         
-        // Start typing effect
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(type, 1000);
         });
 
-        // Animated counter for stats
         function animateCounter() {
             const counters = document.querySelectorAll('.stat-number');
             const speed = 200;
@@ -1463,7 +1591,6 @@
             });
         }
         
-        // Start counter animation when stats section is in view
         const statsObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -1478,15 +1605,12 @@
             statsObserver.observe(statsSection);
         }
 
-        // Project filtering
         const filterBtns = document.querySelectorAll('.filter-btn');
         const projectCards = document.querySelectorAll('.project-card');
         
         filterBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                // Remove active class from all buttons
                 filterBtns.forEach(b => b.classList.remove('active'));
-                // Add active class to clicked button
                 btn.classList.add('active');
                 
                 const filter = btn.getAttribute('data-filter');
@@ -1509,26 +1633,6 @@
             });
         });
 
-        // Form submission
-        const contactForm = document.getElementById('contactForm');
-        
-        contactForm.addEventListener('submit', (e) => {
-            // In a real application, you would handle form submission here
-            // For now, we'll just show a success message
-            e.preventDefault();
-            
-            // Get form data
-            const formData = new FormData(contactForm);
-            const name = formData.get('name');
-            
-            // Show success message
-            alert(`Thank you, ${name}! Your message has been sent successfully. I'll get back to you soon.`);
-            
-            // Reset form
-            contactForm.reset();
-        });
-
-        // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -1548,5 +1652,3 @@
     </script>
 </body>
 </html>
-
-
